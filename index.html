@@ -147,7 +147,8 @@
   const tierLabels = { 1: '🏆 Tier 1', 2: '🥈 Tier 2', 3: '🥉 Tier 3', 4: '🎖 Tier 4' };
 
   function skinUrl(nick, size) {
-    return `https://minotar.net/bust/${nick}/${size}`;
+    return `https://visage.surgeplay.com/bust/${size}/${nick}`;
+  }
   }
 
   onSnapshot(collection(db, "members"), (snapshot) => {
