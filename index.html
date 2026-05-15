@@ -34,18 +34,9 @@
     .member-name { font-size: 13px; flex: 1; }
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
     .modal-overlay.active { display: flex; }
-    .modal { background: #181c27; border: 1px solid #2a2e3d; border-radius: 12px; width: 400px; overflow: hidden; }
+    .modal { position: relative; background: #181c27; border: 1px solid #2a2e3d; border-radius: 12px; width: 400px; overflow: hidden; }
     .modal-head { padding: 20px; border-bottom: 1px solid #2a2e3d; display: flex; align-items: flex-end; gap: 16px; background: #12151f; }
-    .modal-skin-wrap {
-      width: 80px;
-      height: 100px;
-      flex-shrink: 0;
-      overflow: hidden;
-      image-rendering: pixelated;
-      filter: drop-shadow(4px 6px 8px rgba(0,0,0,0.6));
-      transform: perspective(300px) rotateY(-18deg) rotateX(4deg);
-      transform-origin: center bottom;
-    }
+    .modal-skin-wrap { width: 80px; height: 100px; flex-shrink: 0; overflow: hidden; image-rendering: pixelated; filter: drop-shadow(4px 6px 8px rgba(0,0,0,0.6)); }
     .modal-skin-wrap img { width: 100%; height: 100%; image-rendering: pixelated; object-fit: cover; }
     .modal-info { flex: 1; }
     .modal-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
@@ -62,7 +53,6 @@
     .stat-val { font-size: 18px; font-weight: 700; }
     .close-btn { position: absolute; top: 12px; right: 16px; background: none; border: none; color: #666; font-size: 20px; cursor: pointer; }
     .close-btn:hover { color: #aaa; }
-    .modal { position: relative; }
     .loading { text-align: center; padding: 40px; color: #666; font-size: 14px; }
   </style>
 </head>
@@ -105,7 +95,7 @@
 
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal">
-    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="close-btn" onclick="closeModal()">x</button>
     <div class="modal-head">
       <div class="modal-skin-wrap">
         <img id="modal-skin" src="" alt="">
@@ -147,8 +137,7 @@
   const tierLabels = { 1: '🏆 Tier 1', 2: '🥈 Tier 2', 3: '🥉 Tier 3', 4: '🎖 Tier 4' };
 
   function skinUrl(nick, size) {
-    return `https://visage.surgeplay.com/bust/${size}/${nick}`;
-  }
+    return 'https://visage.surgeplay.com/bust/' + size + '/' + nick;
   }
 
   onSnapshot(collection(db, "members"), (snapshot) => {
@@ -162,15 +151,15 @@
         col.innerHTML = '<div class="loading">없음</div>';
         continue;
       }
-      col.innerHTML = filtered.map(m => `
-        <div class="member-row" onclick="showModal(${JSON.stringify(m).replace(/"/g, '&quot;')})">
-          <div class="skin-wrap">
-            <img src="${skinUrl(m.mcNick, 28)}" alt="${m.mcNick}" onerror="this.style.opacity=0">
-          </div>
-          <span class="member-name">${m.mcNick}</span>
-          <span style="color:#444; font-size:12px;">›</span>
-        </div>
-      `).join('');
+      col.innerHTML = filtered.map(m => {
+        const data = JSON.stringify(m).replace(/"/g, '&quot;');
+        const imgSrc = skinUrl(m.mcNick, 28);
+        return '<div class="member-row" onclick="showModal(' + data + ')">'
+          + '<div class="skin-wrap"><img src="' + imgSrc + '" alt="' + m.mcNick + '" onerror="this.style.opacity=0"></div>'
+          + '<span class="member-name">' + m.mcNick + '</span>'
+          + '<span style="color:#444; font-size:12px;">›</span>'
+          + '</div>';
+      }).join('');
     }
   });
 
