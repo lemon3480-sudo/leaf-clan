@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaf Clan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f1117; color: #dde; font-family: 'Noto Sans KR', sans-serif; }
+    nav { background: #181c27; border-bottom: 1px solid #2a2e3d; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-family: 'Press Start 2P', monospace; font-size: 16px; color: #7ab800; letter-spacing: 2px; }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a { color: #aaa; text-decoration: none; font-size: 14px; }
+    .nav-links a:hover { color: #7ab800; }
+    .hero { text-align: center; padding: 48px 24px 32px; border-bottom: 1px solid #2a2e3d; }
+    .hero h1 { font-family: 'Press Start 2P', monospace; font-size: 28px; color: #7ab800; margin-bottom: 12px; }
+    .hero p { color: #888; font-size: 14px; }
+    .tier-section { padding: 24px; }
+    .tier-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid #2a2e3d; border-radius: 8px; overflow: hidden; }
+    .tier-col { border-right: 1px solid #2a2e3d; }
+    .tier-col:last-child { border-right: none; }
+    .tier-header { padding: 14px 16px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #2a2e3d; }
+    .t1 { background: #2a2200; color: #f0c030; }
+    .t2 { background: #1e2030; color: #c0c8e0; }
+    .t3 { background: #1e1a10; color: #c07820; }
+    .t4 { background: #1a1a1a; color: #888; }
+    .member-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #1e2230; cursor: pointer; transition: background 0.15s; }
+    .member-row:hover { background: #1e2235; }
+    .member-row:last-child { border-bottom: none; }
+    .skin { width: 28px; height: 28px; border-radius: 4px; image-rendering: pixelated; background: #2a2e3d; }
+    .member-name { font-size: 13px; flex: 1; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #181c27; border: 1px solid #2a2e3d; border-radius: 12px; width: 380px; overflow: hidden; }
+    .modal-head { padding: 20px; border-bottom: 1px solid #2a2e3d; display: flex; align-items: center; gap: 16px; }
+    .modal-skin { width: 56px; height: 56px; border-radius: 8px; image-rendering: pixelated; background: #2a2e3d; }
+    .modal-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .modal-rank { font-size: 12px; padding: 3px 10px; border-radius: 6px; display: inline-block; }
+    .r1 { background: #3a2e00; color: #f0c030; }
+    .r2 { background: #1e2a3a; color: #80b0f0; }
+    .r3 { background: #2a1e00; color: #c08030; }
+    .r4 { background: #252525; color: #888; }
+    .modal-body { padding: 20px; }
+    .modal-bio { font-size: 13px; color: #aaa; line-height: 1.8; margin-bottom: 16px; }
+    .stats { display: flex; gap: 10px; }
+    .stat { flex: 1; background: #0f1117; border: 1px solid #2a2e3d; border-radius: 8px; padding: 12px; }
+    .stat-label { font-size: 11px; color: #666; margin-bottom: 4px; }
+    .stat-val { font-size: 18px; font-weight: 700; }
+    .close-btn { float: right; background: none; border: none; color: #666; font-size: 20px; cursor: pointer; padding: 0 4px; }
+    .close-btn:hover { color: #aaa; }
+    .loading { text-align: center; padding: 40px; color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">LEAF</div>
+  <div class="nav-links">
+    <a href="#">홈</a>
+    <a href="#">클랜원</a>
+    <a href="#">공지</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>LEAF CLAN</h1>
+  <p>마인크래프트 PvP 클랜</p>
+</div>
+
+<div class="tier-section">
+  <div class="tier-grid">
+    <div class="tier-col">
+      <div class="tier-header t1">🏆 Tier 1</div>
+      <div id="tier1" class="loading">불러오는 중...</div>
+    </div>
+    <div class="tier-col">
+      <div class="tier-header t2">🥈 Tier 2</div>
+      <div id="tier2" class="loading">불러오는 중...</div>
+    </div>
+    <div class="tier-col">
+      <div class="tier-header t3">🥉 Tier 3</div>
+      <div id="tier3" class="loading">불러오는 중...</div>
+    </div>
+    <div class="tier-col">
+      <div class="tier-header t4">🎖 Tier 4</div>
+      <div id="tier4" class="loading">불러오는 중...</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <img class="modal-skin" id="modal-skin" src="" alt="">
+      <div>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div class="modal-name" id="modal-name"></div>
+          <button class="close-btn" onclick="closeModal()">×</button>
+        </div>
+        <span class="modal-rank" id="modal-rank"></span>
+        <div style="font-size:12px; color:#5865f2; margin-top:6px;" id="modal-discord"></div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-bio" id="modal-bio"></div>
+      <div class="stats">
+        <div class="stat"><div class="stat-label">K/D 비율</div><div class="stat-val" id="modal-kdr"></div></div>
+        <div class="stat"><div class="stat-label">총 승리</div><div class="stat-val" id="modal-wins"></div></div>
+        <div class="stat"><div class="stat-label">티어</div><div class="stat-val" id="modal-tier"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCmoMAQQ21iq424Y9205wiBb2LIijpN2lY",
+    authDomain: "leaf-clan.firebaseapp.com",
+    projectId: "leaf-clan",
+    storageBucket: "leaf-clan.firebasestorage.app",
+    messagingSenderId: "63275953645",
+    appId: "1:63275953645:web:810221cce6d66d9e9e8be4"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const tierColors = { 1: 'r1', 2: 'r2', 3: 'r3', 4: 'r4' };
+  const tierLabels = { 1: '🏆 Tier 1', 2: '🥈 Tier 2', 3: '🥉 Tier 3', 4: '🎖 Tier 4' };
+
+  onSnapshot(collection(db, "members"), (snapshot) => {
+    const members = [];
+    snapshot.forEach(doc => members.push({ id: doc.id, ...doc.data() }));
+
+    for (let t = 1; t <= 4; t++) {
+      const col = document.getElementById('tier' + t);
+      const filtered = members.filter(m => m.tier === t);
+      if (filtered.length === 0) {
+        col.innerHTML = '<div class="loading">없음</div>';
+        continue;
+      }
+      col.innerHTML = filtered.map(m => `
+        <div class="member-row" onclick="showModal(${JSON.stringify(m).replace(/"/g, '&quot;')})">
+          <img class="skin" src="https://mc-heads.net/avatar/${m.mcNick}/28" alt="${m.mcNick}" onerror="this.style.opacity=0">
+          <span class="member-name">${m.mcNick}</span>
+          <span style="color:#444; font-size:12px;">›</span>
+        </div>
+      `).join('');
+    }
+  });
+
+  window.showModal = function(m) {
+    document.getElementById('modal-skin').src = `https://mc-heads.net/avatar/${m.mcNick}/64`;
+    document.getElementById('modal-name').textContent = m.mcNick;
+    document.getElementById('modal-rank').textContent = tierLabels[m.tier] + ' · ' + (m.role || '단원');
+    document.getElementById('modal-rank').className = 'modal-rank ' + tierColors[m.tier];
+    document.getElementById('modal-discord').textContent = '🎮 ' + (m.discord || '');
+    document.getElementById('modal-bio').textContent = m.bio || '자기소개가 없습니다.';
+    document.getElementById('modal-kdr').textContent = m.kdr || '-';
+    document.getElementById('modal-wins').textContent = m.wins || '-';
+    document.getElementById('modal-tier').textContent = 'T' + m.tier;
+    document.getElementById('modal').classList.add('active');
+  }
+
+  window.closeModal = function(e) {
+    if (!e || e.target === document.getElementById('modal')) {
+      document.getElementById('modal').classList.remove('active');
+    }
+  }
+</script>
+
+</body>
+</html>
