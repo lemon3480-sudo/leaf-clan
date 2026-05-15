@@ -29,15 +29,27 @@
     .member-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #1e2230; cursor: pointer; transition: background 0.15s; }
     .member-row:hover { background: #1e2235; }
     .member-row:last-child { border-bottom: none; }
-    .skin { width: 28px; height: 28px; border-radius: 4px; image-rendering: pixelated; background: #2a2e3d; }
+    .skin-wrap { width: 28px; height: 28px; border-radius: 4px; overflow: hidden; background: #2a2e3d; flex-shrink: 0; }
+    .skin-wrap img { width: 100%; height: 100%; image-rendering: pixelated; }
     .member-name { font-size: 13px; flex: 1; }
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
     .modal-overlay.active { display: flex; }
-    .modal { background: #181c27; border: 1px solid #2a2e3d; border-radius: 12px; width: 380px; overflow: hidden; }
-    .modal-head { padding: 20px; border-bottom: 1px solid #2a2e3d; display: flex; align-items: center; gap: 16px; }
-    .modal-skin { width: 56px; height: 56px; border-radius: 8px; image-rendering: pixelated; background: #2a2e3d; }
+    .modal { background: #181c27; border: 1px solid #2a2e3d; border-radius: 12px; width: 400px; overflow: hidden; }
+    .modal-head { padding: 20px; border-bottom: 1px solid #2a2e3d; display: flex; align-items: flex-end; gap: 16px; background: #12151f; }
+    .modal-skin-wrap {
+      width: 80px;
+      height: 100px;
+      flex-shrink: 0;
+      overflow: hidden;
+      image-rendering: pixelated;
+      filter: drop-shadow(4px 6px 8px rgba(0,0,0,0.6));
+      transform: perspective(300px) rotateY(-18deg) rotateX(4deg);
+      transform-origin: center bottom;
+    }
+    .modal-skin-wrap img { width: 100%; height: 100%; image-rendering: pixelated; object-fit: cover; }
+    .modal-info { flex: 1; }
     .modal-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-    .modal-rank { font-size: 12px; padding: 3px 10px; border-radius: 6px; display: inline-block; }
+    .modal-rank { font-size: 12px; padding: 3px 10px; border-radius: 6px; display: inline-block; margin-bottom: 6px; }
     .r1 { background: #3a2e00; color: #f0c030; }
     .r2 { background: #1e2a3a; color: #80b0f0; }
     .r3 { background: #2a1e00; color: #c08030; }
@@ -48,8 +60,9 @@
     .stat { flex: 1; background: #0f1117; border: 1px solid #2a2e3d; border-radius: 8px; padding: 12px; }
     .stat-label { font-size: 11px; color: #666; margin-bottom: 4px; }
     .stat-val { font-size: 18px; font-weight: 700; }
-    .close-btn { float: right; background: none; border: none; color: #666; font-size: 20px; cursor: pointer; padding: 0 4px; }
+    .close-btn { position: absolute; top: 12px; right: 16px; background: none; border: none; color: #666; font-size: 20px; cursor: pointer; }
     .close-btn:hover { color: #aaa; }
+    .modal { position: relative; }
     .loading { text-align: center; padding: 40px; color: #666; font-size: 14px; }
   </style>
 </head>
@@ -92,15 +105,15 @@
 
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal">
+    <button class="close-btn" onclick="closeModal()">×</button>
     <div class="modal-head">
-      <img class="modal-skin" id="modal-skin" src="" alt="">
-      <div>
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <div class="modal-name" id="modal-name"></div>
-          <button class="close-btn" onclick="closeModal()">×</button>
-        </div>
+      <div class="modal-skin-wrap">
+        <img id="modal-skin" src="" alt="">
+      </div>
+      <div class="modal-info">
+        <div class="modal-name" id="modal-name"></div>
         <span class="modal-rank" id="modal-rank"></span>
-        <div style="font-size:12px; color:#5865f2; margin-top:6px;" id="modal-discord"></div>
+        <div style="font-size:12px; color:#5865f2; margin-top:4px;" id="modal-discord"></div>
       </div>
     </div>
     <div class="modal-body">
@@ -133,6 +146,10 @@
   const tierColors = { 1: 'r1', 2: 'r2', 3: 'r3', 4: 'r4' };
   const tierLabels = { 1: '🏆 Tier 1', 2: '🥈 Tier 2', 3: '🥉 Tier 3', 4: '🎖 Tier 4' };
 
+  function skinUrl(nick, size) {
+    return `https://minotar.net/bust/${nick}/${size}`;
+  }
+
   onSnapshot(collection(db, "members"), (snapshot) => {
     const members = [];
     snapshot.forEach(doc => members.push({ id: doc.id, ...doc.data() }));
@@ -146,7 +163,9 @@
       }
       col.innerHTML = filtered.map(m => `
         <div class="member-row" onclick="showModal(${JSON.stringify(m).replace(/"/g, '&quot;')})">
-          <img class="skin" src="https://mc-heads.net/avatar/${m.mcNick}/28" alt="${m.mcNick}" onerror="this.style.opacity=0">
+          <div class="skin-wrap">
+            <img src="${skinUrl(m.mcNick, 28)}" alt="${m.mcNick}" onerror="this.style.opacity=0">
+          </div>
           <span class="member-name">${m.mcNick}</span>
           <span style="color:#444; font-size:12px;">›</span>
         </div>
@@ -155,7 +174,7 @@
   });
 
   window.showModal = function(m) {
-    document.getElementById('modal-skin').src = `https://mc-heads.net/avatar/${m.mcNick}/64`;
+    document.getElementById('modal-skin').src = skinUrl(m.mcNick, 100);
     document.getElementById('modal-name').textContent = m.mcNick;
     document.getElementById('modal-rank').textContent = tierLabels[m.tier] + ' · ' + (m.role || '단원');
     document.getElementById('modal-rank').className = 'modal-rank ' + tierColors[m.tier];
