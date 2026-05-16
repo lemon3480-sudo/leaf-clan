@@ -127,6 +127,10 @@
           <div class="stat-label">주 종목</div>
           <div class="stat-val" id="modal-mode">-</div>
         </div>
+        <div class="stat">
+          <div class="stat-label">역할</div>
+          <div class="stat-val" id="modal-role">-</div>
+        </div>
       </div>
     </div>
   </div>
@@ -157,17 +161,16 @@
     Seed:   { color: 'r-seed',   label: '💧 Seed' },
   };
 
-  const modeEmoji = {
-    SWORD: '⚔️ SWORD',
-    DPOT:  '🧪 DPOT',
-    NPOT:  '🪖 NPOT',
-    UHC:   '❤️ UHC',
-    CPVP:  '💎 CPVP',
-    SMP:   '🟣 SMP',
-    AXE:   '🪓 AXE',
-    MACE:  '🔨 MACE',
+  const modeIcon = {
+    SWORD: 'https://minecraft.wiki/images/Diamond_Sword_JE3_BE3.png',
+    DPOT:  'https://minecraft.wiki/images/Potion_JE2_BE2.png',
+    NPOT:  'https://minecraft.wiki/images/Netherite_Helmet_JE2_BE1.png',
+    UHC:   'https://minecraft.wiki/images/Heart_(icon).png',
+    CPVP:  'https://minecraft.wiki/images/End_Crystal_JE2_BE2.png',
+    SMP:   'https://minecraft.wiki/images/Ender_Pearl_JE3_BE3.png',
+    AXE:   'https://minecraft.wiki/images/Diamond_Axe_JE3_BE3.png',
+    MACE:  'https://minecraft.wiki/images/Mace_JE1_BE1.png',
   };
-
   function skinUrl(nick, size) {
     return 'https://visage.surgeplay.com/bust/' + size + '/' + nick;
   }
@@ -207,8 +210,15 @@
     document.getElementById('modal-rank').className = 'modal-rank ' + cfg.color;
     document.getElementById('modal-discord').textContent = '🎮 ' + (m.discord || '');
     document.getElementById('modal-bio').textContent = m.bio || '자기소개가 없습니다.';
-    document.getElementById('modal-region').textContent = m.region || '-';
-    document.getElementById('modal-mode').textContent = m.mainMode ? (modeEmoji[m.mainMode] || m.mainMode) : '-';
+ document.getElementById('modal-region').textContent = m.region || '-';
+    const modeEl = document.getElementById('modal-mode');
+    if (m.mainMode && modeIcon[m.mainMode]) {
+      modeEl.innerHTML = '<img src="' + modeIcon[m.mainMode] + '" style="width:24px;height:24px;image-rendering:pixelated;vertical-align:middle;margin-right:6px;" onerror="this.style.display=\'none\'">' + m.mainMode;
+    } else {
+      modeEl.textContent = m.mainMode || '-';
+    }
+    const roleEl = document.getElementById('modal-role');
+    roleEl.innerHTML = '<span class="modal-rank ' + cfg.color + '" style="font-size:11px;">' + cfg.label + '</span>';
     document.getElementById('modal').classList.add('active');
   }
 
