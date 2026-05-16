@@ -24,8 +24,7 @@
       backdrop-filter: blur(12px);
     }
     .logo {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 16px; color: #39ff14;
+      font-family: 'Press Start 2P', monospace; font-size: 16px; color: #39ff14;
       text-shadow: 0 0 8px rgba(57,255,20,0.9), 0 0 20px rgba(57,255,20,0.5), 0 0 40px rgba(57,255,20,0.3);
       letter-spacing: 2px;
     }
@@ -41,23 +40,49 @@
     }
     .hero p { color: #6a8a70; font-size: 14px; }
     .online-badge {
-      display: inline-flex; align-items: center; gap: 7px;
-      margin-top: 12px; background: rgba(57,255,20,0.07);
-      border: 1px solid rgba(57,255,20,0.25); border-radius: 20px;
-      padding: 5px 16px; font-size: 12px; color: #39ff14;
+      display: inline-flex; align-items: center; gap: 7px; margin-top: 12px;
+      background: rgba(57,255,20,0.07); border: 1px solid rgba(57,255,20,0.25);
+      border-radius: 20px; padding: 5px 16px; font-size: 12px; color: #39ff14;
     }
     .dot { width: 6px; height: 6px; background: #39ff14; border-radius: 50%; animation: pulse 2s infinite; flex-shrink: 0; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
     .tier-section { padding: 24px; }
+
+    .search-wrap {
+      display: flex; justify-content: flex-end;
+      margin-bottom: 14px;
+    }
+    .search-box {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(10,20,13,0.8);
+      border: 1px solid rgba(57,255,20,0.25);
+      border-radius: 8px; padding: 8px 14px;
+      backdrop-filter: blur(8px);
+      width: 240px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-box:focus-within {
+      border-color: rgba(57,255,20,0.6);
+      box-shadow: 0 0 12px rgba(57,255,20,0.15);
+    }
+    .search-box i { font-size: 16px; color: #3a6040; flex-shrink: 0; }
+    .search-box input {
+      background: none; border: none; outline: none;
+      color: #cce; font-size: 13px; width: 100%;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    .search-box input::placeholder { color: #3a5a40; }
+
     .tier-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 
     .tier-col {
       background: rgba(10,20,13,0.65);
-      border-radius: 10px; overflow: visible;
+      border-radius: 10px;
       backdrop-filter: blur(8px);
       transition: box-shadow 0.3s, border-color 0.3s;
-      overflow: hidden;
+      overflow: visible;
+      display: flex; flex-direction: column;
     }
     .tier-col.col-head   { border: 1px solid rgba(245,197,24,0.35); }
     .tier-col.col-elder  { border: 1px solid rgba(232,216,122,0.3); }
@@ -72,29 +97,35 @@
       padding: 12px 16px; font-size: 14px; font-weight: 700;
       display: flex; align-items: center; gap: 8px;
       border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-radius: 9px 9px 0 0;
+      flex-shrink: 0;
     }
-    .th-head   { background: rgba(42,34,0,0.85); color: #f5c518; }
-    .th-elder  { background: rgba(42,39,0,0.85); color: #e8d87a; }
-    .th-senior { background: rgba(26,34,10,0.85); color: #4a7a30; }
-    .th-fruit  { background: rgba(26,42,10,0.85); color: #a0e040; }
-    .th-leaf   { background: rgba(10,34,28,0.85); color: #40c8a0; }
-    .th-seed   { background: rgba(10,34,28,0.85); color: #40c8a0; }
+    .th-head   { background: rgba(42,34,0,0.9); color: #f5c518; }
+    .th-elder  { background: rgba(42,39,0,0.9); color: #e8d87a; }
+    .th-senior { background: rgba(26,34,10,0.9); color: #4a7a30; }
+    .th-fruit  { background: rgba(26,42,10,0.9); color: #a0e040; }
+    .th-leaf   { background: rgba(10,34,28,0.9); color: #40c8a0; }
+    .th-seed   { background: rgba(10,34,28,0.9); color: #40c8a0; }
 
     .tier-subheader {
       padding: 6px 16px; font-size: 11px; font-weight: 700;
       display: flex; align-items: center; gap: 6px;
       border-bottom: 1px solid rgba(255,255,255,0.04);
+      flex-shrink: 0;
     }
 
+    .tier-body { flex: 1; }
+
     .member-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px;
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
       border-bottom: 1px solid rgba(255,255,255,0.04);
       cursor: pointer;
       transition: background 0.15s;
       position: relative;
     }
     .member-row:last-child { border-bottom: none; }
+
     .col-head  .member-row:hover { background: rgba(245,197,24,0.08); }
     .col-elder .member-row:hover { background: rgba(232,216,122,0.07); }
     .col-fruit .member-row:hover { background: rgba(160,224,64,0.07); }
@@ -104,41 +135,37 @@
     .col-fruit .member-row:hover .member-name { color: #a0e040; }
     .col-seed  .member-row:hover .member-name { color: #40c8a0; }
 
-    .skin-wrap { width: 32px; height: 32px; border-radius: 4px; overflow: hidden; background: #1a2a1e; flex-shrink: 0; }
+    .skin-wrap { width: 40px; height: 40px; border-radius: 5px; overflow: hidden; background: #1a2a1e; flex-shrink: 0; }
     .skin-wrap img { width: 100%; height: 100%; image-rendering: pixelated; }
-    .member-name { font-size: 13px; font-weight: 600; flex: 1; color: #cce; transition: color 0.2s; }
+    .member-name { font-size: 14px; font-weight: 600; flex: 1; color: #cce; transition: color 0.2s; }
+    .online-dot { width: 7px; height: 7px; background: #39ff14; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 5px rgba(57,255,20,0.7); }
 
-    .online-dot { width: 7px; height: 7px; background: #39ff14; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 4px rgba(57,255,20,0.6); }
-
-    .hover-card {
+    .hover-popup {
       display: none;
-      position: absolute;
-      left: calc(100% + 8px);
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(8,15,10,0.95);
-      border: 1px solid rgba(57,255,20,0.3);
+      position: fixed;
+      background: rgba(6,14,8,0.97);
+      border: 1px solid rgba(57,255,20,0.35);
       border-radius: 10px;
       padding: 14px 16px;
       width: 220px;
-      z-index: 50;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 0 20px rgba(57,255,20,0.15);
+      z-index: 200;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 24px rgba(57,255,20,0.2), 0 4px 20px rgba(0,0,0,0.6);
       pointer-events: none;
     }
-    .member-row:hover .hover-card { display: block; }
-
-    .hover-card-nick { font-size: 13px; font-weight: 700; color: #eef; margin-bottom: 8px; }
-    .hover-card-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #7a9a80; margin-bottom: 5px; }
-    .hover-card-row:last-child { margin-bottom: 0; }
-    .hover-card-row i { font-size: 14px; color: #39ff14; flex-shrink: 0; }
-    .hover-card-val { color: #aac; }
+    .hover-popup.active { display: block; }
+    .popup-nick { font-size: 14px; font-weight: 700; color: #eef; margin-bottom: 10px; border-bottom: 1px solid rgba(57,255,20,0.15); padding-bottom: 8px; }
+    .popup-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #7a9a80; margin-bottom: 6px; }
+    .popup-row:last-child { margin-bottom: 0; }
+    .popup-row i { font-size: 14px; color: #39ff14; flex-shrink: 0; }
+    .popup-val { color: #aac; }
 
     .loading { text-align: center; padding: 32px; color: #3a5a40; font-size: 13px; }
+    .hidden { display: none !important; }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
     .modal-overlay.active { display: flex; }
-    .modal { position: relative; background: rgba(8,15,10,0.95); border: 1px solid rgba(57,255,20,0.25); border-radius: 16px; width: 520px; overflow: hidden; backdrop-filter: blur(20px); box-shadow: 0 0 40px rgba(57,255,20,0.1); }
+    .modal { position: relative; background: rgba(8,15,10,0.97); border: 1px solid rgba(57,255,20,0.25); border-radius: 16px; width: 520px; overflow: hidden; backdrop-filter: blur(20px); box-shadow: 0 0 40px rgba(57,255,20,0.1); }
     .modal-head { padding: 28px 24px 24px; border-bottom: 1px solid rgba(57,255,20,0.1); display: flex; align-items: flex-end; gap: 20px; background: rgba(5,12,7,0.8); }
     .modal-skin-wrap { width: 110px; height: 140px; flex-shrink: 0; overflow: hidden; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.8)); }
     .modal-skin-wrap img { width: 100%; height: 100%; image-rendering: pixelated; object-fit: cover; }
@@ -169,6 +196,12 @@
   <div class="bg-overlay"></div>
 </div>
 
+<div class="hover-popup" id="hoverPopup">
+  <div class="popup-nick" id="popup-nick"></div>
+  <div class="popup-row"><i class="ti ti-at" aria-hidden="true"></i><span class="popup-val" id="popup-discord"></span></div>
+  <div class="popup-row"><i class="ti ti-calendar" aria-hidden="true"></i><span class="popup-val" id="popup-join"></span></div>
+</div>
+
 <div class="content">
   <nav>
     <div class="logo">LEAF</div>
@@ -182,33 +215,37 @@
   <div class="hero">
     <h1>LEAF CLAN</h1>
     <p>마인크래프트 PvP 클랜</p>
-    <div class="online-badge">
-      <span class="dot"></span>
-      실시간 연동중
-    </div>
+    <div class="online-badge"><span class="dot"></span>실시간 연동중</div>
   </div>
 
   <div class="tier-section">
+    <div class="search-wrap">
+      <div class="search-box">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input type="text" id="searchInput" placeholder="닉네임 검색...">
+      </div>
+    </div>
+
     <div class="tier-grid">
       <div class="tier-col col-head">
         <div class="tier-header th-head">👑 Head</div>
-        <div id="tier-head" class="loading">불러오는 중...</div>
+        <div class="tier-body" id="tier-head"><div class="loading">불러오는 중...</div></div>
       </div>
       <div class="tier-col col-elder">
         <div class="tier-header th-elder">🍃 Elder</div>
-        <div id="tier-elder"></div>
+        <div class="tier-body" id="tier-elder"></div>
         <div class="tier-subheader th-senior">🍃 Senior</div>
-        <div id="tier-senior"></div>
+        <div class="tier-body" id="tier-senior"></div>
       </div>
       <div class="tier-col col-fruit">
         <div class="tier-header th-fruit">🍃 Fruit</div>
-        <div id="tier-fruit"></div>
+        <div class="tier-body" id="tier-fruit"></div>
         <div class="tier-subheader th-leaf">🍃 Leaf</div>
-        <div id="tier-leaf"></div>
+        <div class="tier-body" id="tier-leaf"></div>
       </div>
       <div class="tier-col col-seed">
         <div class="tier-header th-seed">💧 Seed</div>
-        <div id="tier-seed" class="loading">불러오는 중...</div>
+        <div class="tier-body" id="tier-seed"><div class="loading">불러오는 중...</div></div>
       </div>
     </div>
   </div>
@@ -277,10 +314,13 @@
   }
 
   function formatDate(ts) {
-    if (!ts) return '-';
+    if (!ts) return '정보 없음';
     const d = ts.toDate ? ts.toDate() : new Date(ts);
     return d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
   }
+
+  let allMembers = [];
+  const popup = document.getElementById('hoverPopup');
 
   function renderCol(colId, members) {
     const col = document.getElementById(colId);
@@ -291,30 +331,65 @@
     }
     col.innerHTML = members.map(m => {
       const data = JSON.stringify(m).replace(/"/g, '&quot;');
-      const joinDate = m.joinedAt ? formatDate(m.joinedAt) : '-';
-      const callsign = m.discord ? m.discord.split('#')[0] : '-';
-      return '<div class="member-row" onclick="showModal(' + data + ')">'
-        + '<div class="skin-wrap"><img src="' + skinUrl(m.mcNick, 32) + '" alt="' + m.mcNick + '" onerror="this.style.opacity=0"></div>'
+      return '<div class="member-row" data-nick="' + m.mcNick + '" data-discord="' + (m.discord||'') + '" data-join="' + formatDate(m.joinedAt) + '" onclick="showModal(' + data + ')">'
+        + '<div class="skin-wrap"><img src="' + skinUrl(m.mcNick, 40) + '" alt="' + m.mcNick + '" onerror="this.style.opacity=0"></div>'
         + '<span class="member-name">' + m.mcNick + '</span>'
         + '<span class="online-dot"></span>'
-        + '<div class="hover-card">'
-        + '<div class="hover-card-nick">' + m.mcNick + '</div>'
-        + '<div class="hover-card-row"><i class="ti ti-at" aria-hidden="true"></i><span class="hover-card-val">' + (m.discord || '-') + '</span></div>'
-        + '<div class="hover-card-row"><i class="ti ti-calendar" aria-hidden="true"></i><span class="hover-card-val">가입일 ' + joinDate + '</span></div>'
-        + '</div>'
         + '</div>';
     }).join('');
   }
 
+  function applySearch(query) {
+    const q = query.toLowerCase();
+    document.querySelectorAll('.member-row').forEach(row => {
+      const nick = row.dataset.nick.toLowerCase();
+      row.classList.toggle('hidden', q.length > 0 && !nick.includes(q));
+    });
+  }
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    applySearch(e.target.value);
+  });
+
+  document.addEventListener('mouseover', e => {
+    const row = e.target.closest('.member-row');
+    if (row) {
+      document.getElementById('popup-nick').textContent = row.dataset.nick;
+      document.getElementById('popup-discord').textContent = row.dataset.discord || '-';
+      document.getElementById('popup-join').textContent = '가입일 ' + row.dataset.join;
+      popup.classList.add('active');
+    }
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (popup.classList.contains('active')) {
+      const x = e.clientX + 16;
+      const y = e.clientY - 10;
+      const pw = popup.offsetWidth;
+      const ph = popup.offsetHeight;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      popup.style.left = (x + pw > vw ? e.clientX - pw - 16 : x) + 'px';
+      popup.style.top = (y + ph > vh ? e.clientY - ph : y) + 'px';
+    }
+  });
+
+  document.addEventListener('mouseout', e => {
+    if (!e.target.closest('.member-row')) {
+      popup.classList.remove('active');
+    }
+  });
+
   onSnapshot(collection(db, "members"), (snapshot) => {
-    const members = [];
-    snapshot.forEach(doc => members.push({ id: doc.id, ...doc.data() }));
-    renderCol('tier-head',   members.filter(m => m.role === 'Head'));
-    renderCol('tier-elder',  members.filter(m => m.role === 'Elder'));
-    renderCol('tier-senior', members.filter(m => m.role === 'Senior'));
-    renderCol('tier-fruit',  members.filter(m => m.role === 'Fruit'));
-    renderCol('tier-leaf',   members.filter(m => m.role === 'Leaf'));
-    renderCol('tier-seed',   members.filter(m => m.role === 'Seed'));
+    allMembers = [];
+    snapshot.forEach(doc => allMembers.push({ id: doc.id, ...doc.data() }));
+    renderCol('tier-head',   allMembers.filter(m => m.role === 'Head'));
+    renderCol('tier-elder',  allMembers.filter(m => m.role === 'Elder'));
+    renderCol('tier-senior', allMembers.filter(m => m.role === 'Senior'));
+    renderCol('tier-fruit',  allMembers.filter(m => m.role === 'Fruit'));
+    renderCol('tier-leaf',   allMembers.filter(m => m.role === 'Leaf'));
+    renderCol('tier-seed',   allMembers.filter(m => m.role === 'Seed'));
+    applySearch(document.getElementById('searchInput').value);
   });
 
   window.showModal = function(m) {
