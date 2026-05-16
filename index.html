@@ -81,8 +81,7 @@
       border-radius: 10px;
       backdrop-filter: blur(8px);
       transition: box-shadow 0.3s, border-color 0.3s;
-      overflow: visible;
-      display: flex; flex-direction: column;
+      overflow: hidden;
     }
     .tier-col.col-head   { border: 1px solid rgba(245,197,24,0.35); }
     .tier-col.col-elder  { border: 1px solid rgba(232,216,122,0.3); }
@@ -114,7 +113,7 @@
       flex-shrink: 0;
     }
 
-    .tier-body { flex: 1; }
+    .tier-body { flex: 0; }
 
     .member-row {
       display: flex; align-items: center; gap: 12px;
