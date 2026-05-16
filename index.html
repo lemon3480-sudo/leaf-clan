@@ -163,33 +163,115 @@
     .video-url { font-size: 11px; color: #4a8a60; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .video-meta { font-size: 11px; color: #4a6a50; }
     .video-empty { text-align: center; padding: 60px; color: #3a5a40; font-size: 14px; }
-    .board-section { padding: 24px; max-width: 760px; margin: 0 auto; }
+    .board-wrap { display: flex; gap: 20px; padding: 24px; align-items: flex-start; }
+    .board-main { flex: 1; min-width: 0; }
+    .board-sidebar { width: 220px; flex-shrink: 0; }
+
+    .board-filter { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+    .board-filter-label { font-size: 12px; color: #4a6a50; margin-right: 4px; }
+    .filter-btn {
+      background: rgba(10,20,13,0.8); border: 1px solid rgba(57,255,20,0.2);
+      border-radius: 20px; padding: 5px 16px; color: #6a8a70; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: 'Noto Sans KR', sans-serif;
+    }
+    .filter-btn.active { background: rgba(57,255,20,0.15); border-color: rgba(57,255,20,0.5); color: #39ff14; }
+    .filter-btn:hover { color: #39ff14; border-color: rgba(57,255,20,0.4); }
+
     .board-input-wrap {
       background: rgba(10,20,13,0.82); border: 1px solid rgba(57,255,20,0.2);
-      border-radius: 10px; padding: 16px; margin-bottom: 20px;
+      border-radius: 12px; padding: 16px; margin-bottom: 16px;
+      display: flex; gap: 12px; align-items: flex-start;
     }
+    .board-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(57,255,20,0.1); border: 1px solid rgba(57,255,20,0.2);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 18px; color: #39ff14;
+    }
+    .board-input-right { flex: 1; }
+    .board-nickname {
+      width: 100%; background: rgba(5,12,7,0.8); border: 1px solid rgba(57,255,20,0.15);
+      border-radius: 8px; padding: 8px 12px; color: #cce; font-size: 13px;
+      font-family: 'Noto Sans KR', sans-serif; outline: none; margin-bottom: 8px;
+      transition: border-color 0.2s;
+    }
+    .board-nickname:focus { border-color: rgba(57,255,20,0.4); }
+    .board-nickname::placeholder { color: #3a5a40; }
     .board-textarea {
       width: 100%; background: rgba(5,12,7,0.8); border: 1px solid rgba(57,255,20,0.15);
-      border-radius: 8px; padding: 12px; color: #cce; font-size: 14px;
+      border-radius: 8px; padding: 10px 12px; color: #cce; font-size: 14px;
       font-family: 'Noto Sans KR', sans-serif; resize: none; outline: none;
-      transition: border-color 0.2s;
-      height: 80px;
+      transition: border-color 0.2s; height: 80px;
     }
     .board-textarea:focus { border-color: rgba(57,255,20,0.4); }
     .board-textarea::placeholder { color: #3a5a40; }
+    .board-input-footer { display: flex; justify-content: flex-end; margin-top: 8px; }
     .board-submit {
-      margin-top: 10px; background: rgba(57,255,20,0.1); border: 1px solid rgba(57,255,20,0.3);
-      border-radius: 8px; padding: 10px 24px; color: #39ff14; font-size: 14px; font-weight: 600;
+      background: rgba(57,255,20,0.1); border: 1px solid rgba(57,255,20,0.3);
+      border-radius: 8px; padding: 8px 20px; color: #39ff14; font-size: 13px; font-weight: 600;
       cursor: pointer; transition: background 0.2s, box-shadow 0.2s;
-      font-family: 'Noto Sans KR', sans-serif;
+      font-family: 'Noto Sans KR', sans-serif; display: flex; align-items: center; gap: 6px;
     }
     .board-submit:hover { background: rgba(57,255,20,0.18); box-shadow: 0 0 12px rgba(57,255,20,0.2); }
+
     .board-post {
       background: rgba(10,20,13,0.82); border: 1px solid rgba(57,255,20,0.12);
-      border-radius: 10px; padding: 16px 18px; margin-bottom: 12px;
+      border-radius: 12px; padding: 16px 18px; margin-bottom: 12px;
+      transition: border-color 0.2s;
     }
-    .board-post-text { font-size: 14px; color: #cce; line-height: 1.7; margin-bottom: 8px; }
-    .board-post-meta { font-size: 11px; color: #3a5a40; }
+    .board-post:hover { border-color: rgba(57,255,20,0.25); }
+    .board-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .post-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(57,255,20,0.1); border: 1px solid rgba(57,255,20,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+    }
+    .post-nick { font-size: 14px; font-weight: 700; color: #cce; }
+    .post-date { font-size: 11px; color: #3a5a40; margin-left: auto; }
+    .board-post-text { font-size: 14px; color: #bbc; line-height: 1.75; margin-bottom: 12px; padding-left: 46px; }
+    .board-post-actions { display: flex; gap: 16px; padding-left: 46px; }
+    .action-btn {
+      display: flex; align-items: center; gap: 5px;
+      background: none; border: none; color: #4a6a50; font-size: 12px; cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif; transition: color 0.2s; padding: 4px 0;
+    }
+    .action-btn:hover { color: #39ff14; }
+    .action-btn.liked { color: #39ff14; }
+    .action-btn i { font-size: 14px; }
+
+    .comment-wrap { margin-top: 12px; padding-left: 46px; border-top: 1px solid rgba(57,255,20,0.08); padding-top: 12px; display: none; }
+    .comment-wrap.open { display: block; }
+    .comment-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .comment-nick {
+      background: rgba(5,12,7,0.8); border: 1px solid rgba(57,255,20,0.15);
+      border-radius: 6px; padding: 6px 10px; color: #cce; font-size: 12px;
+      font-family: 'Noto Sans KR', sans-serif; outline: none; width: 100px; flex-shrink: 0;
+    }
+    .comment-input {
+      flex: 1; background: rgba(5,12,7,0.8); border: 1px solid rgba(57,255,20,0.15);
+      border-radius: 6px; padding: 6px 10px; color: #cce; font-size: 12px;
+      font-family: 'Noto Sans KR', sans-serif; outline: none;
+    }
+    .comment-submit {
+      background: rgba(57,255,20,0.1); border: 1px solid rgba(57,255,20,0.3);
+      border-radius: 6px; padding: 6px 12px; color: #39ff14; font-size: 12px;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif; flex-shrink: 0;
+    }
+    .comment-item { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; }
+    .comment-avatar { width: 24px; height: 24px; border-radius: 50%; background: rgba(57,255,20,0.1); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+    .comment-body { flex: 1; }
+    .comment-nick-text { font-size: 12px; font-weight: 700; color: #aac; margin-right: 6px; }
+    .comment-text { font-size: 12px; color: #8a9a8a; }
+    .comment-date { font-size: 10px; color: #3a5a40; margin-top: 2px; }
+
+    .board-sidebar-card {
+      background: rgba(10,20,13,0.82); border: 1px solid rgba(57,255,20,0.15);
+      border-radius: 12px; padding: 18px;
+    }
+    .sidebar-title { font-size: 13px; font-weight: 700; color: #39ff14; margin-bottom: 14px; border-bottom: 1px solid rgba(57,255,20,0.15); padding-bottom: 10px; }
+    .sidebar-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; }
+    .sidebar-label { color: #4a6a50; }
+    .sidebar-val { color: #cce; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -269,14 +351,37 @@
   <div id="page-board" class="page">
     <div class="page-hero">
       <h2>게시판</h2>
-      <p>익명으로 자유롭게 소통해요</p>
+      <p>자유롭게 소통해요</p>
     </div>
-    <div class="board-section">
-      <div class="board-input-wrap">
-        <textarea class="board-textarea" id="boardInput" placeholder="익명으로 글을 작성하세요..."></textarea>
-        <button class="board-submit" onclick="submitPost()">게시하기</button>
+    <div class="board-wrap">
+      <div class="board-main">
+        <div class="board-filter">
+          <span class="board-filter-label">필터</span>
+          <button class="filter-btn active" id="filter-recent" onclick="setFilter('recent')">최신순</button>
+          <button class="filter-btn" id="filter-popular" onclick="setFilter('popular')">인기순</button>
+        </div>
+        <div class="board-input-wrap">
+          <div class="board-avatar">?</div>
+          <div class="board-input-right">
+            <input class="board-nickname" id="boardNick" placeholder="닉네임 입력..." maxlength="20">
+            <textarea class="board-textarea" id="boardInput" placeholder="글을 작성하세요..."></textarea>
+            <div class="board-input-footer">
+              <button class="board-submit" onclick="submitPost()">
+                <i class="ti ti-send" aria-hidden="true"></i> 게시하기
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="boardPosts"></div>
       </div>
-      <div id="boardPosts"></div>
+      <div class="board-sidebar">
+        <div class="board-sidebar-card">
+          <div class="sidebar-title">📋 게시판 정보</div>
+          <div class="sidebar-row"><span class="sidebar-label">총 게시글</span><span class="sidebar-val" id="sidebar-total">0</span></div>
+          <div class="sidebar-row"><span class="sidebar-label">오늘 게시글</span><span class="sidebar-val" id="sidebar-today">0</span></div>
+          <div class="sidebar-row"><span class="sidebar-label">총 좋아요</span><span class="sidebar-val" id="sidebar-likes">0</span></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -451,29 +556,126 @@
     });
   });
 
-  onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (snapshot) => {
+  import { doc, updateDoc, increment, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  let allPosts = [];
+  let currentFilter = 'recent';
+
+  window.setFilter = function(filter) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter-' + filter).classList.add('active');
+    renderPosts();
+  }
+
+  function renderPosts() {
     const container = document.getElementById('boardPosts');
-    if (snapshot.empty) { container.innerHTML = '<div class="loading">아직 게시글이 없어요</div>'; return; }
+    if (allPosts.length === 0) { container.innerHTML = '<div class="loading">아직 게시글이 없어요</div>'; return; }
+    let sorted = [...allPosts];
+    if (currentFilter === 'popular') sorted.sort((a, b) => (b.likes || 0) - (a.likes || 0));
     container.innerHTML = '';
-    snapshot.forEach(doc => {
-      const p = doc.data();
-      const post = document.createElement('div');
-      post.className = 'board-post';
-      post.innerHTML = '<div class="board-post-text">' + p.text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
-        + '<div class="board-post-meta">익명 · ' + formatDate(p.createdAt) + '</div>';
-      container.appendChild(post);
+    sorted.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'board-post';
+      div.innerHTML =
+        '<div class="board-post-header">'
+        + '<div class="post-avatar">?</div>'
+        + '<span class="post-nick">' + (p.nick || '익명').replace(/</g,'&lt;') + '</span>'
+        + '<span class="post-date">' + formatDate(p.createdAt) + '</span>'
+        + '</div>'
+        + '<div class="board-post-text">' + p.text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
+        + '<div class="board-post-actions">'
+        + '<button class="action-btn' + (p.liked ? ' liked' : '') + '" onclick="toggleLike(\'' + p.id + '\', this)">'
+        + '<i class="ti ti-heart" aria-hidden="true"></i> ' + (p.likes || 0) + '</button>'
+        + '<button class="action-btn" onclick="toggleComment(\'' + p.id + '\')">'
+        + '<i class="ti ti-message" aria-hidden="true"></i> 댓글</button>'
+        + '<button class="action-btn" onclick="sharePost(\'' + p.id + '\')">'
+        + '<i class="ti ti-share" aria-hidden="true"></i> 공유</button>'
+        + '</div>'
+        + '<div class="comment-wrap" id="comments-' + p.id + '">'
+        + '<div class="comment-input-row">'
+        + '<input class="comment-nick" id="cnick-' + p.id + '" placeholder="닉네임...">'
+        + '<input class="comment-input" id="cinput-' + p.id + '" placeholder="댓글 입력...">'
+        + '<button class="comment-submit" onclick="submitComment(\'' + p.id + '\')">등록</button>'
+        + '</div>'
+        + '<div id="clist-' + p.id + '"></div>'
+        + '</div>';
+      container.appendChild(div);
+      loadComments(p.id);
     });
+  }
+
+  async function loadComments(postId) {
+    const clist = document.getElementById('clist-' + postId);
+    if (!clist) return;
+    onSnapshot(query(collection(db, 'posts', postId, 'comments'), orderBy('createdAt', 'asc')), snap => {
+      clist.innerHTML = '';
+      snap.forEach(d => {
+        const c = d.data();
+        clist.innerHTML += '<div class="comment-item">'
+          + '<div class="comment-avatar">?</div>'
+          + '<div class="comment-body">'
+          + '<span class="comment-nick-text">' + (c.nick||'익명').replace(/</g,'&lt;') + '</span>'
+          + '<span class="comment-text">' + c.text.replace(/</g,'&lt;') + '</span>'
+          + '<div class="comment-date">' + formatDate(c.createdAt) + '</div>'
+          + '</div></div>';
+      });
+    });
+  }
+
+  window.toggleComment = function(postId) {
+    const wrap = document.getElementById('comments-' + postId);
+    wrap.classList.toggle('open');
+  }
+
+  window.toggleLike = async function(postId, btn) {
+    const liked = btn.classList.contains('liked');
+    const ref = doc(db, 'posts', postId);
+    await updateDoc(ref, { likes: increment(liked ? -1 : 1) });
+    btn.classList.toggle('liked');
+  }
+
+  window.sharePost = function(postId) {
+    const url = window.location.href.split('#')[0] + '#post-' + postId;
+    navigator.clipboard.writeText(url).then(() => alert('링크가 복사됐어요!'));
+  }
+
+  window.submitComment = async function(postId) {
+    const nick = document.getElementById('cnick-' + postId).value.trim() || '익명';
+    const text = document.getElementById('cinput-' + postId).value.trim();
+    if (!text) return;
+    await addDoc(collection(db, 'posts', postId, 'comments'), {
+      nick, text, createdAt: serverTimestamp()
+    });
+    document.getElementById('cinput-' + postId).value = '';
+  }
+
+  const likedPosts = new Set(JSON.parse(localStorage.getItem('likedPosts') || '[]'));
+
+  onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (snapshot) => {
+    allPosts = [];
+    let todayCount = 0; let totalLikes = 0;
+    const today = new Date().toDateString();
+    snapshot.forEach(d => {
+      const p = { id: d.id, ...d.data(), liked: likedPosts.has(d.id) };
+      allPosts.push(p);
+      if (p.createdAt && p.createdAt.toDate && p.createdAt.toDate().toDateString() === today) todayCount++;
+      totalLikes += p.likes || 0;
+    });
+    document.getElementById('sidebar-total').textContent = allPosts.length;
+    document.getElementById('sidebar-today').textContent = todayCount;
+    document.getElementById('sidebar-likes').textContent = totalLikes;
+    renderPosts();
   });
 
   window.submitPost = async function() {
-    const input = document.getElementById('boardInput');
-    const text = input.value.trim();
+    const nick = document.getElementById('boardNick').value.trim() || '익명';
+    const text = document.getElementById('boardInput').value.trim();
     if (!text) return;
-    await addDoc(collection(db, "posts"), {
-      text: text,
-      createdAt: serverTimestamp()
+    const ref = await addDoc(collection(db, "posts"), {
+      nick, text, likes: 0, createdAt: serverTimestamp()
     });
-    input.value = '';
+    document.getElementById('boardInput').value = '';
   }
 
   window.showModal = function(m) {
