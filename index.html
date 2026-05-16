@@ -23,51 +23,41 @@
     .tier-col:last-child { border-right: none; }
     .tier-header { padding: 14px 16px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #2a2e3d; }
     .tier-subheader { padding: 6px 16px; font-size: 11px; font-weight: 600; border-bottom: 1px solid #2a2e3d; display: flex; align-items: center; gap: 6px; }
-
-    .t-head-bg { background: #2a2200; }
-    .t-head-color { color: #f5c518; }
-    .t-elder-bg { background: #2a2700; }
-    .t-elder-color { color: #e8d87a; }
-    .t-senior-bg { background: #1a2200; }
-    .t-senior-color { color: #4a7a30; }
-    .t-fruit-bg { background: #1a2a10; }
-    .t-fruit-color { color: #a0e040; }
-    .t-leaf-bg { background: #0e2220; }
-    .t-leaf-color { color: #40c8a0; }
-    .t-seed-bg { background: #0e2220; }
-    .t-seed-color { color: #40c8a0; }
-
+    .t-head-bg { background: #2a2200; } .t-head-color { color: #f5c518; }
+    .t-elder-bg { background: #2a2700; } .t-elder-color { color: #e8d87a; }
+    .t-senior-bg { background: #1a2200; } .t-senior-color { color: #4a7a30; }
+    .t-fruit-bg { background: #1a2a10; } .t-fruit-color { color: #a0e040; }
+    .t-leaf-bg { background: #0e2220; } .t-leaf-color { color: #40c8a0; }
+    .t-seed-bg { background: #0e2220; } .t-seed-color { color: #40c8a0; }
     .member-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #1e2230; cursor: pointer; transition: background 0.15s; }
     .member-row:hover { background: #1e2235; }
     .member-row:last-child { border-bottom: none; }
     .skin-wrap { width: 36px; height: 36px; border-radius: 4px; overflow: hidden; background: #2a2e3d; flex-shrink: 0; }
     .skin-wrap img { width: 100%; height: 100%; image-rendering: pixelated; }
     .member-name { font-size: 15px; font-weight: 600; flex: 1; color: #eee; }
-    .member-role { font-size: 11px; color: #666; margin-top: 2px; }
-
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; }
     .modal-overlay.active { display: flex; }
-    .modal { position: relative; background: #181c27; border: 1px solid #2a2e3d; border-radius: 12px; width: 400px; overflow: hidden; }
-    .modal-head { padding: 24px 20px 20px; border-bottom: 1px solid #2a2e3d; display: flex; align-items: flex-end; gap: 16px; background: #12151f; }
-    .modal-skin-wrap { width: 90px; height: 110px; flex-shrink: 0; overflow: hidden; filter: drop-shadow(4px 6px 8px rgba(0,0,0,0.6)); }
+    .modal { position: relative; background: #181c27; border: 1px solid #2a2e3d; border-radius: 16px; width: 520px; overflow: hidden; }
+    .modal-head { padding: 28px 24px 24px; border-bottom: 1px solid #2a2e3d; display: flex; align-items: flex-end; gap: 20px; background: #12151f; }
+    .modal-skin-wrap { width: 110px; height: 140px; flex-shrink: 0; overflow: hidden; filter: drop-shadow(4px 8px 12px rgba(0,0,0,0.7)); }
     .modal-skin-wrap img { width: 100%; height: 100%; image-rendering: pixelated; object-fit: cover; }
-    .modal-info { flex: 1; }
-    .modal-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #eee; }
-    .modal-rank { font-size: 12px; padding: 4px 12px; border-radius: 6px; display: inline-block; margin-bottom: 6px; font-weight: 600; }
+    .modal-info { flex: 1; padding-bottom: 4px; }
+    .modal-name { font-size: 24px; font-weight: 700; margin-bottom: 10px; color: #eee; }
+    .modal-rank { font-size: 13px; padding: 4px 12px; border-radius: 6px; display: inline-block; margin-bottom: 8px; font-weight: 600; }
     .r-head   { background: #3a2e00; color: #f5c518; }
     .r-elder  { background: #2a2700; color: #e8d87a; }
     .r-senior { background: #1a2200; color: #4a7a30; }
     .r-fruit  { background: #1a2a10; color: #a0e040; }
     .r-leaf   { background: #0e2220; color: #40c8a0; }
     .r-seed   { background: #0e2220; color: #40c8a0; }
-
-    .modal-body { padding: 20px; }
-    .modal-bio { font-size: 13px; color: #aaa; line-height: 1.8; margin-bottom: 16px; }
-    .stats { display: flex; gap: 10px; }
-    .stat { flex: 1; background: #0f1117; border: 1px solid #2a2e3d; border-radius: 8px; padding: 12px; }
-    .stat-label { font-size: 11px; color: #666; margin-bottom: 4px; }
-    .stat-val { font-size: 18px; font-weight: 700; }
-    .close-btn { position: absolute; top: 12px; right: 16px; background: none; border: none; color: #666; font-size: 20px; cursor: pointer; }
+    .modal-discord { font-size: 13px; color: #5865f2; margin-top: 4px; }
+    .modal-body { padding: 24px; }
+    .modal-bio { font-size: 14px; color: #aaa; line-height: 1.8; margin-bottom: 20px; min-height: 40px; }
+    .stats { display: flex; gap: 12px; }
+    .stat { flex: 1; background: #0f1117; border: 1px solid #2a2e3d; border-radius: 10px; padding: 14px 16px; }
+    .stat-label { font-size: 11px; color: #666; margin-bottom: 6px; }
+    .stat-val { font-size: 16px; font-weight: 700; color: #eee; }
+    .close-btn { position: absolute; top: 14px; right: 18px; background: none; border: none; color: #666; font-size: 22px; cursor: pointer; }
     .close-btn:hover { color: #aaa; }
     .loading { text-align: center; padding: 40px; color: #666; font-size: 14px; }
   </style>
@@ -90,31 +80,26 @@
 
 <div class="tier-section">
   <div class="tier-grid">
-
     <div class="tier-col">
       <div class="tier-header t-head-bg t-head-color">👑 Head</div>
       <div id="tier-head" class="loading">불러오는 중...</div>
     </div>
-
     <div class="tier-col">
       <div class="tier-header t-elder-bg t-elder-color">🍃 Elder</div>
       <div id="tier-elder"></div>
       <div class="tier-subheader t-senior-bg t-senior-color">🍃 Senior</div>
       <div id="tier-senior"></div>
     </div>
-
     <div class="tier-col">
       <div class="tier-header t-fruit-bg t-fruit-color">🍃 Fruit</div>
       <div id="tier-fruit"></div>
       <div class="tier-subheader t-leaf-bg t-leaf-color">🍃 Leaf</div>
       <div id="tier-leaf"></div>
     </div>
-
     <div class="tier-col">
       <div class="tier-header t-seed-bg t-seed-color">💧 Seed</div>
       <div id="tier-seed" class="loading">불러오는 중...</div>
     </div>
-
   </div>
 </div>
 
@@ -128,15 +113,20 @@
       <div class="modal-info">
         <div class="modal-name" id="modal-name"></div>
         <span class="modal-rank" id="modal-rank"></span>
-        <div style="font-size:12px; color:#5865f2; margin-top:4px;" id="modal-discord"></div>
+        <div class="modal-discord" id="modal-discord"></div>
       </div>
     </div>
     <div class="modal-body">
       <div class="modal-bio" id="modal-bio"></div>
       <div class="stats">
-        <div class="stat"><div class="stat-label">K/D 비율</div><div class="stat-val" id="modal-kdr"></div></div>
-        <div class="stat"><div class="stat-label">총 승리</div><div class="stat-val" id="modal-wins"></div></div>
-        <div class="stat"><div class="stat-label">역할</div><div class="stat-val" id="modal-tier" style="font-size:14px;"></div></div>
+        <div class="stat">
+          <div class="stat-label">지역</div>
+          <div class="stat-val" id="modal-region">-</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">주 종목</div>
+          <div class="stat-val" id="modal-mode">-</div>
+        </div>
       </div>
     </div>
   </div>
@@ -159,12 +149,23 @@
   const db = getFirestore(app);
 
   const roleConfig = {
-    Head:   { color: 'r-head',   emoji: '👑', label: '👑 Head' },
-    Elder:  { color: 'r-elder',  emoji: '🍃', label: '🍃 Elder' },
-    Senior: { color: 'r-senior', emoji: '🍃', label: '🍃 Senior' },
-    Fruit:  { color: 'r-fruit',  emoji: '🍃', label: '🍃 Fruit' },
-    Leaf:   { color: 'r-leaf',   emoji: '🍃', label: '🍃 Leaf' },
-    Seed:   { color: 'r-seed',   emoji: '💧', label: '💧 Seed' },
+    Head:   { color: 'r-head',   label: '👑 Head' },
+    Elder:  { color: 'r-elder',  label: '🍃 Elder' },
+    Senior: { color: 'r-senior', label: '🍃 Senior' },
+    Fruit:  { color: 'r-fruit',  label: '🍃 Fruit' },
+    Leaf:   { color: 'r-leaf',   label: '🍃 Leaf' },
+    Seed:   { color: 'r-seed',   label: '💧 Seed' },
+  };
+
+  const modeEmoji = {
+    SWORD: '⚔️ SWORD',
+    DPOT:  '🧪 DPOT',
+    NPOT:  '🪖 NPOT',
+    UHC:   '❤️ UHC',
+    CPVP:  '💎 CPVP',
+    SMP:   '🟣 SMP',
+    AXE:   '🪓 AXE',
+    MACE:  '🔨 MACE',
   };
 
   function skinUrl(nick, size) {
@@ -190,7 +191,6 @@
   onSnapshot(collection(db, "members"), (snapshot) => {
     const members = [];
     snapshot.forEach(doc => members.push({ id: doc.id, ...doc.data() }));
-
     renderCol('tier-head',   members.filter(m => m.role === 'Head'));
     renderCol('tier-elder',  members.filter(m => m.role === 'Elder'));
     renderCol('tier-senior', members.filter(m => m.role === 'Senior'));
@@ -201,15 +201,14 @@
 
   window.showModal = function(m) {
     const cfg = roleConfig[m.role] || { color: 'r-seed', label: m.role };
-    document.getElementById('modal-skin').src = skinUrl(m.mcNick, 110);
+    document.getElementById('modal-skin').src = skinUrl(m.mcNick, 140);
     document.getElementById('modal-name').textContent = m.mcNick;
     document.getElementById('modal-rank').textContent = cfg.label;
     document.getElementById('modal-rank').className = 'modal-rank ' + cfg.color;
     document.getElementById('modal-discord').textContent = '🎮 ' + (m.discord || '');
     document.getElementById('modal-bio').textContent = m.bio || '자기소개가 없습니다.';
-    document.getElementById('modal-kdr').textContent = m.kdr || '-';
-    document.getElementById('modal-wins').textContent = m.wins || '-';
-    document.getElementById('modal-tier').textContent = cfg.label;
+    document.getElementById('modal-region').textContent = m.region || '-';
+    document.getElementById('modal-mode').textContent = m.mainMode ? (modeEmoji[m.mainMode] || m.mainMode) : '-';
     document.getElementById('modal').classList.add('active');
   }
 
