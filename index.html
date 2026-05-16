@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Leaf Clan</title>
+  <title>Team Leaf</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans KR', sans-serif; background: #080d0a; color: #dde; min-height: 100vh; }
 
-    .bg-wrap { position: fixed; inset: 0; z-index: 0; }
+    .bg-wrap { position: fixed; inset: 0; z-index: 0; transition: opacity 0.4s; }
     .bg-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.45); }
     .bg-overlay { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(57,255,20,0.05) 0%, transparent 70%); }
 
@@ -29,9 +29,12 @@
       letter-spacing: 2px;
     }
     .nav-links { display: flex; gap: 32px; }
-    .nav-links a { color: #8aaa90; text-decoration: none; font-size: 16px; font-weight: 600; transition: color 0.2s; }
+    .nav-links a { color: #8aaa90; text-decoration: none; font-size: 16px; font-weight: 600; transition: color 0.2s; cursor: pointer; }
     .nav-links a:hover { color: #39ff14; }
     .nav-links a.active { color: #39ff14; border-bottom: 2px solid #39ff14; padding-bottom: 2px; }
+
+    .page { display: none; }
+    .page.active { display: block; }
 
     .hero { text-align: center; padding: 48px 24px 32px; border-bottom: 1px solid rgba(57,255,20,0.1); }
     .hero h1 {
@@ -49,40 +52,20 @@
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
     .tier-section { padding: 24px; }
-
-    .search-wrap {
-      display: flex; justify-content: flex-end;
-      margin-bottom: 14px;
-    }
+    .search-wrap { display: flex; justify-content: flex-end; margin-bottom: 14px; }
     .search-box {
       display: flex; align-items: center; gap: 8px;
-      background: rgba(10,20,13,0.8);
-      border: 1px solid rgba(57,255,20,0.25);
-      border-radius: 8px; padding: 8px 14px;
-      backdrop-filter: blur(8px);
-      width: 240px;
+      background: rgba(10,20,13,0.8); border: 1px solid rgba(57,255,20,0.25);
+      border-radius: 8px; padding: 8px 14px; backdrop-filter: blur(8px); width: 240px;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .search-box:focus-within {
-      border-color: rgba(57,255,20,0.6);
-      box-shadow: 0 0 12px rgba(57,255,20,0.15);
-    }
+    .search-box:focus-within { border-color: rgba(57,255,20,0.6); box-shadow: 0 0 12px rgba(57,255,20,0.15); }
     .search-box i { font-size: 16px; color: #3a6040; flex-shrink: 0; }
-    .search-box input {
-      background: none; border: none; outline: none;
-      color: #cce; font-size: 13px; width: 100%;
-      font-family: 'Noto Sans KR', sans-serif;
-    }
+    .search-box input { background: none; border: none; outline: none; color: #cce; font-size: 13px; width: 100%; font-family: 'Noto Sans KR', sans-serif; }
     .search-box input::placeholder { color: #3a5a40; }
 
     .tier-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-
-    .tier-col {
-      background: rgba(10,20,13,0.82);
-      border-radius: 10px;
-      transition: box-shadow 0.3s, border-color 0.3s;
-      overflow: hidden;
-    }
+    .tier-col { background: rgba(10,20,13,0.82); border-radius: 10px; transition: box-shadow 0.3s, border-color 0.3s; overflow: hidden; }
     .tier-col.col-head   { border: 1px solid rgba(245,197,24,0.35); }
     .tier-col.col-elder  { border: 1px solid rgba(232,216,122,0.3); }
     .tier-col.col-fruit  { border: 1px solid rgba(160,224,64,0.3); }
@@ -92,39 +75,21 @@
     .tier-col.col-fruit:hover  { box-shadow: 0 0 20px rgba(160,224,64,0.25); border-color: rgba(160,224,64,0.6); }
     .tier-col.col-seed:hover   { box-shadow: 0 0 20px rgba(64,200,160,0.25); border-color: rgba(64,200,160,0.6); }
 
-    .tier-header {
-      padding: 12px 16px; font-size: 14px; font-weight: 700;
-      display: flex; align-items: center; gap: 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      border-radius: 9px 9px 0 0;
-      flex-shrink: 0;
-    }
+    .tier-header { padding: 12px 16px; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); border-radius: 9px 9px 0 0; }
     .th-head   { background: rgba(42,34,0,0.9); color: #f5c518; }
     .th-elder  { background: rgba(42,39,0,0.9); color: #e8d87a; }
     .th-senior { background: rgba(26,34,10,0.9); color: #4a7a30; }
     .th-fruit  { background: rgba(26,42,10,0.9); color: #a0e040; }
     .th-leaf   { background: rgba(10,34,28,0.9); color: #40c8a0; }
     .th-seed   { background: rgba(10,34,28,0.9); color: #40c8a0; }
-
-    .tier-subheader {
-      padding: 10px 16px; font-size: 13px; font-weight: 700;
-      display: flex; align-items: center; gap: 6px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      flex-shrink: 0;
-    }
-
-    .tier-body { flex: 0; }
+    .tier-subheader { padding: 10px 16px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 
     .member-row {
       display: flex; align-items: center; gap: 12px;
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      cursor: pointer;
-      transition: background 0.15s;
-      position: relative;
+      padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04);
+      cursor: pointer; transition: background 0.15s; position: relative;
     }
     .member-row:last-child { border-bottom: none; }
-
     .col-head  .member-row:hover { background: rgba(245,197,24,0.08); }
     .col-elder .member-row:hover { background: rgba(232,216,122,0.07); }
     .col-fruit .member-row:hover { background: rgba(160,224,64,0.07); }
@@ -133,24 +98,18 @@
     .col-elder .member-row:hover .member-name { color: #e8d87a; }
     .col-fruit .member-row:hover .member-name { color: #a0e040; }
     .col-seed  .member-row:hover .member-name { color: #40c8a0; }
-
     .skin-wrap { width: 40px; height: 40px; border-radius: 5px; overflow: hidden; background: #1a2a1e; flex-shrink: 0; }
     .skin-wrap img { width: 100%; height: 100%; image-rendering: pixelated; }
     .member-name { font-size: 14px; font-weight: 600; flex: 1; color: #cce; transition: color 0.2s; }
     .online-dot { width: 7px; height: 7px; background: #39ff14; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 5px rgba(57,255,20,0.7); }
+    .loading { text-align: center; padding: 32px; color: #3a5a40; font-size: 13px; }
+    .hidden { display: none !important; }
 
     .hover-popup {
-      display: none;
-      position: fixed;
-      background: rgba(6,14,8,0.97);
-      border: 1px solid rgba(57,255,20,0.35);
-      border-radius: 10px;
-      padding: 14px 16px;
-      width: 220px;
-      z-index: 200;
-      backdrop-filter: blur(20px);
-      box-shadow: 0 0 24px rgba(57,255,20,0.2), 0 4px 20px rgba(0,0,0,0.6);
-      pointer-events: none;
+      display: none; position: fixed;
+      background: rgba(6,14,8,0.99); border: 1px solid rgba(57,255,20,0.35);
+      border-radius: 10px; padding: 14px 16px; width: 220px; z-index: 200;
+      box-shadow: 0 0 24px rgba(57,255,20,0.2), 0 4px 20px rgba(0,0,0,0.6); pointer-events: none;
     }
     .hover-popup.active { display: block; }
     .popup-nick { font-size: 14px; font-weight: 700; color: #eef; margin-bottom: 10px; border-bottom: 1px solid rgba(57,255,20,0.15); padding-bottom: 8px; }
@@ -159,12 +118,9 @@
     .popup-row i { font-size: 14px; color: #39ff14; flex-shrink: 0; }
     .popup-val { color: #aac; }
 
-    .loading { text-align: center; padding: 32px; color: #3a5a40; font-size: 13px; }
-    .hidden { display: none !important; }
-
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
     .modal-overlay.active { display: flex; }
-    .modal { position: relative; background: rgba(8,15,10,0.97); border: 1px solid rgba(57,255,20,0.25); border-radius: 16px; width: 520px; overflow: hidden; backdrop-filter: blur(20px); box-shadow: 0 0 40px rgba(57,255,20,0.1); }
+    .modal { position: relative; background: rgba(8,15,10,0.97); border: 1px solid rgba(57,255,20,0.25); border-radius: 16px; width: 520px; overflow: hidden; box-shadow: 0 0 40px rgba(57,255,20,0.1); }
     .modal-head { padding: 28px 24px 24px; border-bottom: 1px solid rgba(57,255,20,0.1); display: flex; align-items: flex-end; gap: 20px; background: rgba(5,12,7,0.8); }
     .modal-skin-wrap { width: 110px; height: 140px; flex-shrink: 0; overflow: hidden; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.8)); }
     .modal-skin-wrap img { width: 100%; height: 100%; image-rendering: pixelated; object-fit: cover; }
@@ -186,12 +142,58 @@
     .stat-val { font-size: 15px; font-weight: 700; color: #cce; }
     .close-btn { position: absolute; top: 14px; right: 18px; background: none; border: none; color: #3a5a40; font-size: 22px; cursor: pointer; transition: color 0.2s; }
     .close-btn:hover { color: #39ff14; }
+
+    .page-hero { text-align: center; padding: 40px 24px 28px; border-bottom: 1px solid rgba(57,255,20,0.1); }
+    .page-hero h2 { font-family: 'Press Start 2P', monospace; font-size: 22px; color: #39ff14; text-shadow: 0 0 10px rgba(57,255,20,0.7); margin-bottom: 8px; letter-spacing: 2px; }
+    .page-hero p { color: #6a8a70; font-size: 13px; }
+
+    .video-section { padding: 24px; }
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .video-card {
+      background: rgba(10,20,13,0.82); border: 1px solid rgba(57,255,20,0.15);
+      border-radius: 10px; overflow: hidden; cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .video-card:hover { border-color: rgba(57,255,20,0.5); box-shadow: 0 0 16px rgba(57,255,20,0.15); }
+    .video-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #0a1a0d; }
+    .video-info { padding: 12px 14px; }
+    .video-title { font-size: 13px; font-weight: 600; color: #cce; margin-bottom: 6px; line-height: 1.4; }
+    .video-meta { font-size: 11px; color: #4a6a50; }
+    .video-empty { text-align: center; padding: 60px; color: #3a5a40; font-size: 14px; }
+
+    .board-section { padding: 24px; max-width: 760px; margin: 0 auto; }
+    .board-input-wrap {
+      background: rgba(10,20,13,0.82); border: 1px solid rgba(57,255,20,0.2);
+      border-radius: 10px; padding: 16px; margin-bottom: 20px;
+    }
+    .board-textarea {
+      width: 100%; background: rgba(5,12,7,0.8); border: 1px solid rgba(57,255,20,0.15);
+      border-radius: 8px; padding: 12px; color: #cce; font-size: 14px;
+      font-family: 'Noto Sans KR', sans-serif; resize: none; outline: none;
+      transition: border-color 0.2s;
+      height: 80px;
+    }
+    .board-textarea:focus { border-color: rgba(57,255,20,0.4); }
+    .board-textarea::placeholder { color: #3a5a40; }
+    .board-submit {
+      margin-top: 10px; background: rgba(57,255,20,0.1); border: 1px solid rgba(57,255,20,0.3);
+      border-radius: 8px; padding: 10px 24px; color: #39ff14; font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s, box-shadow 0.2s;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    .board-submit:hover { background: rgba(57,255,20,0.18); box-shadow: 0 0 12px rgba(57,255,20,0.2); }
+    .board-post {
+      background: rgba(10,20,13,0.82); border: 1px solid rgba(57,255,20,0.12);
+      border-radius: 10px; padding: 16px 18px; margin-bottom: 12px;
+    }
+    .board-post-text { font-size: 14px; color: #cce; line-height: 1.7; margin-bottom: 8px; }
+    .board-post-meta { font-size: 11px; color: #3a5a40; }
   </style>
 </head>
 <body>
 
-<div class="bg-wrap">
-  <img class="bg-img" src="https://lemon3480-sudo.github.io/leaf-clan/images/bg.png" alt="">
+<div class="bg-wrap" id="bgWrap">
+  <img class="bg-img" id="bgImg" src="https://lemon3480-sudo.github.io/leaf-clan/images/bg.png" alt="">
   <div class="bg-overlay"></div>
 </div>
 
@@ -206,47 +208,73 @@
   <nav>
     <div class="logo">LEAF</div>
     <div class="nav-links">
-      <a href="#" class="active" onclick="showPage('members', this)">클랜원</a>
-      <a href="#" onclick="showPage('video', this)">영상</a>
-      <a href="#" onclick="showPage('board', this)">게시판</a>
+      <a class="active" onclick="showPage('members', this)">클랜원</a>
+      <a onclick="showPage('video', this)">영상</a>
+      <a onclick="showPage('board', this)">게시판</a>
     </div>
   </nav>
 
-  <div class="hero">
-    <h1>Leaf</h1>
-    <p>마인크래프트 PvP 클랜</p>
-    <div class="online-badge"><span class="dot"></span>실시간 연동중</div>
-  </div>
-
-  <div class="tier-section">
-    <div class="search-wrap">
-      <div class="search-box">
-        <i class="ti ti-search" aria-hidden="true"></i>
-        <input type="text" id="searchInput" placeholder="닉네임 검색...">
+  <div id="page-members" class="page active">
+    <div class="hero">
+      <h1>TEAM LEAF</h1>
+      <p>마인크래프트 PvP 클랜</p>
+      <div class="online-badge"><span class="dot"></span>실시간 연동중</div>
+    </div>
+    <div class="tier-section">
+      <div class="search-wrap">
+        <div class="search-box">
+          <i class="ti ti-search" aria-hidden="true"></i>
+          <input type="text" id="searchInput" placeholder="닉네임 검색...">
+        </div>
+      </div>
+      <div class="tier-grid">
+        <div class="tier-col col-head">
+          <div class="tier-header th-head">👑 Head</div>
+          <div id="tier-head"><div class="loading">불러오는 중...</div></div>
+        </div>
+        <div class="tier-col col-elder">
+          <div class="tier-header th-elder">🍃 Elder</div>
+          <div id="tier-elder"></div>
+          <div class="tier-subheader th-senior">🍃 Senior</div>
+          <div id="tier-senior"></div>
+        </div>
+        <div class="tier-col col-fruit">
+          <div class="tier-header th-fruit">🍃 Fruit</div>
+          <div id="tier-fruit"></div>
+          <div class="tier-subheader th-leaf">🍃 Leaf</div>
+          <div id="tier-leaf"></div>
+        </div>
+        <div class="tier-col col-seed">
+          <div class="tier-header th-seed">💧 Seed</div>
+          <div id="tier-seed"><div class="loading">불러오는 중...</div></div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <div class="tier-grid">
-      <div class="tier-col col-head">
-        <div class="tier-header th-head">👑 Head</div>
-        <div class="tier-body" id="tier-head"><div class="loading">불러오는 중...</div></div>
+  <div id="page-video" class="page">
+    <div class="page-hero">
+      <h2>영상</h2>
+      <p>Leaf 디스코드 영상 채널의 유튜브 링크 모음</p>
+    </div>
+    <div class="video-section">
+      <div class="video-grid" id="videoGrid">
+        <div class="video-empty">불러오는 중...</div>
       </div>
-      <div class="tier-col col-elder">
-        <div class="tier-header th-elder">🍃 Elder</div>
-        <div class="tier-body" id="tier-elder"></div>
-        <div class="tier-subheader th-senior">🍃 Senior</div>
-        <div class="tier-body" id="tier-senior"></div>
+    </div>
+  </div>
+
+  <div id="page-board" class="page">
+    <div class="page-hero">
+      <h2>게시판</h2>
+      <p>익명으로 자유롭게 소통해요</p>
+    </div>
+    <div class="board-section">
+      <div class="board-input-wrap">
+        <textarea class="board-textarea" id="boardInput" placeholder="익명으로 글을 작성하세요..."></textarea>
+        <button class="board-submit" onclick="submitPost()">게시하기</button>
       </div>
-      <div class="tier-col col-fruit">
-        <div class="tier-header th-fruit">🍃 Fruit</div>
-        <div class="tier-body" id="tier-fruit"></div>
-        <div class="tier-subheader th-leaf">🍃 Leaf</div>
-        <div class="tier-body" id="tier-leaf"></div>
-      </div>
-      <div class="tier-col col-seed">
-        <div class="tier-header th-seed">💧 Seed</div>
-        <div class="tier-body" id="tier-seed"><div class="loading">불러오는 중...</div></div>
-      </div>
+      <div id="boardPosts"></div>
     </div>
   </div>
 </div>
@@ -275,7 +303,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCmoMAQQ21iq424Y9205wiBb2LIijpN2lY",
@@ -288,6 +316,20 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+  const bgImages = {
+    members: 'https://lemon3480-sudo.github.io/leaf-clan/images/bg.png',
+    video:   'https://lemon3480-sudo.github.io/leaf-clan/images/vedio.png',
+    board:   'https://lemon3480-sudo.github.io/leaf-clan/images/chat.png',
+  };
+
+  window.showPage = function(page, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    if (el) el.classList.add('active');
+    document.getElementById('bgImg').src = bgImages[page] || bgImages.members;
+  }
 
   const roleConfig = {
     Head:   { color: 'r-head',   label: '👑 Head' },
@@ -310,7 +352,7 @@
   };
 
   function skinUrl(nick, size) {
-    return 'https://visage.surgeplay.com/bust/' + size + '/' + nick;
+    return 'https://mc-heads.net/avatar/' + nick + '/' + size;
   }
 
   function formatDate(ts) {
@@ -319,24 +361,18 @@
     return d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
   }
 
-  function getCallsign(m) {
-    if (m.callsign) return m.callsign;
-    return '-';
+  function getYoutubeId(url) {
+    const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : null;
   }
-
-  let allMembers = [];
-  const popup = document.getElementById('hoverPopup');
 
   function renderCol(colId, members) {
     const col = document.getElementById(colId);
     if (!col) return;
-    if (members.length === 0) {
-      col.innerHTML = '<div class="loading">없음</div>';
-      return;
-    }
+    if (members.length === 0) { col.innerHTML = '<div class="loading">없음</div>'; return; }
     col.innerHTML = members.map(m => {
       const data = JSON.stringify(m).replace(/"/g, '&quot;');
-      const callsign = getCallsign(m);
+      const callsign = m.callsign || '-';
       return '<div class="member-row" data-nick="' + m.mcNick + '" data-discord="' + (m.discord||'') + '" data-callsign="' + callsign + '" data-join="' + formatDate(m.joinedAt) + '" onclick="showModal(' + data + ')">'
         + '<div class="skin-wrap"><img src="' + skinUrl(m.mcNick, 40) + '" alt="' + m.mcNick + '" onerror="this.style.opacity=0"></div>'
         + '<span class="member-name">' + m.mcNick + '</span>'
@@ -353,10 +389,9 @@
     });
   }
 
-  document.getElementById('searchInput').addEventListener('input', e => {
-    applySearch(e.target.value);
-  });
+  document.getElementById('searchInput').addEventListener('input', e => applySearch(e.target.value));
 
+  const popup = document.getElementById('hoverPopup');
   document.addEventListener('mouseover', e => {
     const row = e.target.closest('.member-row');
     if (row) {
@@ -365,39 +400,77 @@
       document.getElementById('popup-discord').textContent = row.dataset.discord || '-';
       document.getElementById('popup-join').textContent = '가입일 ' + row.dataset.join;
       popup.classList.add('active');
+    } else {
+      popup.classList.remove('active');
     }
   });
-
   document.addEventListener('mousemove', e => {
     if (popup.classList.contains('active')) {
-      const x = e.clientX + 16;
-      const y = e.clientY - 10;
-      const pw = popup.offsetWidth;
-      const ph = popup.offsetHeight;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      popup.style.left = (x + pw > vw ? e.clientX - pw - 16 : x) + 'px';
-      popup.style.top = (y + ph > vh ? e.clientY - ph : y) + 'px';
-    }
-  });
-
-  document.addEventListener('mouseout', e => {
-    if (!e.target.closest('.member-row')) {
-      popup.classList.remove('active');
+      const x = e.clientX + 16; const y = e.clientY - 10;
+      const pw = popup.offsetWidth; const ph = popup.offsetHeight;
+      popup.style.left = (x + pw > window.innerWidth ? e.clientX - pw - 16 : x) + 'px';
+      popup.style.top = (y + ph > window.innerHeight ? e.clientY - ph : y) + 'px';
     }
   });
 
   onSnapshot(collection(db, "members"), (snapshot) => {
-    allMembers = [];
-    snapshot.forEach(doc => allMembers.push({ id: doc.id, ...doc.data() }));
-    renderCol('tier-head',   allMembers.filter(m => m.role === 'Head'));
-    renderCol('tier-elder',  allMembers.filter(m => m.role === 'Elder'));
-    renderCol('tier-senior', allMembers.filter(m => m.role === 'Senior'));
-    renderCol('tier-fruit',  allMembers.filter(m => m.role === 'Fruit'));
-    renderCol('tier-leaf',   allMembers.filter(m => m.role === 'Leaf'));
-    renderCol('tier-seed',   allMembers.filter(m => m.role === 'Seed'));
+    const members = [];
+    snapshot.forEach(doc => members.push({ id: doc.id, ...doc.data() }));
+    renderCol('tier-head',   members.filter(m => m.role === 'Head'));
+    renderCol('tier-elder',  members.filter(m => m.role === 'Elder'));
+    renderCol('tier-senior', members.filter(m => m.role === 'Senior'));
+    renderCol('tier-fruit',  members.filter(m => m.role === 'Fruit'));
+    renderCol('tier-leaf',   members.filter(m => m.role === 'Leaf'));
+    renderCol('tier-seed',   members.filter(m => m.role === 'Seed'));
     applySearch(document.getElementById('searchInput').value);
   });
+
+  onSnapshot(query(collection(db, "videos"), orderBy("postedAt", "desc")), (snapshot) => {
+    const grid = document.getElementById('videoGrid');
+    if (snapshot.empty) { grid.innerHTML = '<div class="video-empty">아직 등록된 영상이 없어요</div>'; return; }
+    grid.innerHTML = '';
+    snapshot.forEach(doc => {
+      const v = doc.data();
+      const vid = getYoutubeId(v.url);
+      if (!vid) return;
+      const thumb = 'https://img.youtube.com/vi/' + vid + '/mqdefault.jpg';
+      const ytUrl = 'https://www.youtube.com/watch?v=' + vid;
+      const card = document.createElement('div');
+      card.className = 'video-card';
+      card.onclick = () => window.open(ytUrl, '_blank');
+      card.innerHTML = '<img class="video-thumb" src="' + thumb + '" alt="">'
+        + '<div class="video-info">'
+        + '<div class="video-title">' + (v.content || '').substring(0, 60) + '</div>'
+        + '<div class="video-meta">' + formatDate(v.postedAt) + '</div>'
+        + '</div>';
+      grid.appendChild(card);
+    });
+  });
+
+  onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (snapshot) => {
+    const container = document.getElementById('boardPosts');
+    if (snapshot.empty) { container.innerHTML = '<div class="loading">아직 게시글이 없어요</div>'; return; }
+    container.innerHTML = '';
+    snapshot.forEach(doc => {
+      const p = doc.data();
+      const post = document.createElement('div');
+      post.className = 'board-post';
+      post.innerHTML = '<div class="board-post-text">' + p.text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
+        + '<div class="board-post-meta">익명 · ' + formatDate(p.createdAt) + '</div>';
+      container.appendChild(post);
+    });
+  });
+
+  window.submitPost = async function() {
+    const input = document.getElementById('boardInput');
+    const text = input.value.trim();
+    if (!text) return;
+    await addDoc(collection(db, "posts"), {
+      text: text,
+      createdAt: serverTimestamp()
+    });
+    input.value = '';
+  }
 
   window.showModal = function(m) {
     const cfg = roleConfig[m.role] || { color: 'r-seed', label: m.role };
@@ -411,9 +484,7 @@
     const modeEl = document.getElementById('modal-mode');
     if (m.mainMode && modeIcon[m.mainMode]) {
       modeEl.innerHTML = '<img src="' + modeIcon[m.mainMode] + '" style="width:22px;height:22px;image-rendering:pixelated;vertical-align:middle;margin-right:5px;">' + m.mainMode;
-    } else {
-      modeEl.textContent = m.mainMode || '-';
-    }
+    } else { modeEl.textContent = m.mainMode || '-'; }
     const roleEl = document.getElementById('modal-role');
     roleEl.innerHTML = '<span class="modal-rank ' + cfg.color + '" style="font-size:11px;padding:2px 8px;">' + cfg.label + '</span>';
     document.getElementById('modal').classList.add('active');
