@@ -319,11 +319,9 @@
     return d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
   }
 
-  function getCallsign(discord) {
-    if (!discord) return '-';
-    const sep = discord.includes('|') ? '|' : (discord.includes('ㅣ') ? 'ㅣ' : null);
-    if (!sep) return '-';
-    return discord.split(sep)[0].trim();
+  function getCallsign(m) {
+    if (m.callsign) return m.callsign;
+    return '-';
   }
 
   let allMembers = [];
@@ -338,7 +336,7 @@
     }
     col.innerHTML = members.map(m => {
       const data = JSON.stringify(m).replace(/"/g, '&quot;');
-      const callsign = getCallsign(m.discord);
+      const callsign = getCallsign(m);
       return '<div class="member-row" data-nick="' + m.mcNick + '" data-discord="' + (m.discord||'') + '" data-callsign="' + callsign + '" data-join="' + formatDate(m.joinedAt) + '" onclick="showModal(' + data + ')">'
         + '<div class="skin-wrap"><img src="' + skinUrl(m.mcNick, 40) + '" alt="' + m.mcNick + '" onerror="this.style.opacity=0"></div>'
         + '<span class="member-name">' + m.mcNick + '</span>'
