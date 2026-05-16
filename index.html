@@ -28,9 +28,10 @@
       text-shadow: 0 0 8px rgba(57,255,20,0.9), 0 0 20px rgba(57,255,20,0.5), 0 0 40px rgba(57,255,20,0.3);
       letter-spacing: 2px;
     }
-    .nav-links { display: flex; gap: 24px; }
-    .nav-links a { color: #5a8060; text-decoration: none; font-size: 14px; transition: color 0.2s; }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a { color: #8aaa90; text-decoration: none; font-size: 16px; font-weight: 600; transition: color 0.2s; }
     .nav-links a:hover { color: #39ff14; }
+    .nav-links a.active { color: #39ff14; border-bottom: 2px solid #39ff14; padding-bottom: 2px; }
 
     .hero { text-align: center; padding: 48px 24px 32px; border-bottom: 1px solid rgba(57,255,20,0.1); }
     .hero h1 {
@@ -205,9 +206,9 @@
   <nav>
     <div class="logo">LEAF</div>
     <div class="nav-links">
-      <a href="#">홈</a>
-      <a href="#">클랜원</a>
-      <a href="#">공지</a>
+      <a href="#" class="active" onclick="showPage('members', this)">클랜원</a>
+      <a href="#" onclick="showPage('video', this)">영상</a>
+      <a href="#" onclick="showPage('board', this)">게시판</a>
     </div>
   </nav>
 
