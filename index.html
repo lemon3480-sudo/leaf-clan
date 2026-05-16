@@ -399,7 +399,9 @@
       </div>
       <div class="board-sidebar">
         <div class="board-sidebar-card">
-          <div class="sidebar-clan-logo">🍃</div>
+          <div class="sidebar-clan-logo" style="background:none; border:none; width:80px; height:80px;">
+            <img src="https://lemon3480-sudo.github.io/leaf-clan/images/clan-logo.png" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+          </div>
           <div class="sidebar-clan-name">Team LEAF</div>
           <div class="sidebar-clan-sub">클랜 · LEAF</div>
           <hr class="sidebar-divider">
@@ -613,7 +615,7 @@
         + '<div class="board-post-text">' + p.text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
         + '<div class="board-post-actions">'
         + '<button class="action-btn' + (p.liked ? ' liked' : '') + '" onclick="toggleLike(\'' + p.id + '\', this)">'
-        + '<i class="ti ti-heart" aria-hidden="true"></i> ' + (p.likes || 0) + '</button>'
+        + '❤️ ' + (p.likes || 0) + '</button>'
         + '<button class="action-btn" onclick="toggleComment(\'' + p.id + '\')">'
         + '<i class="ti ti-message" aria-hidden="true"></i> 댓글</button>'
         + '<button class="action-btn" onclick="sharePost(\'' + p.id + '\')">'
