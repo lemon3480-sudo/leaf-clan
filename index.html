@@ -213,7 +213,7 @@
  document.getElementById('modal-region').textContent = m.region || '-';
     const modeEl = document.getElementById('modal-mode');
     if (m.mainMode && modeIcon[m.mainMode]) {
-      modeEl.innerHTML = '<img src="' + modeIcon[m.mainMode] + '" style="width:24px;height:24px;image-rendering:pixelated;vertical-align:middle;margin-right:6px;mix-blend-mode:multiply;" onerror="this.style.display=\'none\'">' + m.mainMode;
+      modeEl.innerHTML = '<img src="' + modeIcon[m.mainMode] + '" style="width:24px;height:24px;image-rendering:pixelated;vertical-align:middle;margin-right:6px;" onerror="this.style.display=\'none\'">' + m.mainMode;
     } else {
       modeEl.textContent = m.mainMode || '-';
     }
