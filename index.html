@@ -198,6 +198,7 @@
 
 <div class="hover-popup" id="hoverPopup">
   <div class="popup-nick" id="popup-nick"></div>
+  <div class="popup-row"><i class="ti ti-id-badge" aria-hidden="true"></i><span style="color:#7a9a80;font-size:12px;">콜사인&nbsp;</span><span class="popup-val" id="popup-callsign"></span></div>
   <div class="popup-row"><i class="ti ti-at" aria-hidden="true"></i><span class="popup-val" id="popup-discord"></span></div>
   <div class="popup-row"><i class="ti ti-calendar" aria-hidden="true"></i><span class="popup-val" id="popup-join"></span></div>
 </div>
@@ -213,7 +214,7 @@
   </nav>
 
   <div class="hero">
-    <h1>LEAF CLAN</h1>
+    <h1>Team Leaf</h1>
     <p>마인크래프트 PvP 클랜</p>
     <div class="online-badge"><span class="dot"></span>실시간 연동중</div>
   </div>
@@ -319,6 +320,13 @@
     return d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
   }
 
+  function getCallsign(discord) {
+    if (!discord) return '-';
+    const sep = discord.includes('|') ? '|' : (discord.includes('ㅣ') ? 'ㅣ' : null);
+    if (!sep) return '-';
+    return discord.split(sep)[0].trim();
+  }
+
   let allMembers = [];
   const popup = document.getElementById('hoverPopup');
 
@@ -331,7 +339,8 @@
     }
     col.innerHTML = members.map(m => {
       const data = JSON.stringify(m).replace(/"/g, '&quot;');
-      return '<div class="member-row" data-nick="' + m.mcNick + '" data-discord="' + (m.discord||'') + '" data-join="' + formatDate(m.joinedAt) + '" onclick="showModal(' + data + ')">'
+      const callsign = getCallsign(m.discord);
+      return '<div class="member-row" data-nick="' + m.mcNick + '" data-discord="' + (m.discord||'') + '" data-callsign="' + callsign + '" data-join="' + formatDate(m.joinedAt) + '" onclick="showModal(' + data + ')">'
         + '<div class="skin-wrap"><img src="' + skinUrl(m.mcNick, 40) + '" alt="' + m.mcNick + '" onerror="this.style.opacity=0"></div>'
         + '<span class="member-name">' + m.mcNick + '</span>'
         + '<span class="online-dot"></span>'
@@ -355,6 +364,7 @@
     const row = e.target.closest('.member-row');
     if (row) {
       document.getElementById('popup-nick').textContent = row.dataset.nick;
+      document.getElementById('popup-callsign').textContent = row.dataset.callsign || '-';
       document.getElementById('popup-discord').textContent = row.dataset.discord || '-';
       document.getElementById('popup-join').textContent = '가입일 ' + row.dataset.join;
       popup.classList.add('active');
