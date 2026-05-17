@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>로그인 중...</title>
+  <style>
+    body { background: #080d0a; color: #39ff14; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+    .msg { text-align: center; }
+    .msg p { font-size: 16px; margin-top: 12px; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="msg">
+    <div style="font-size:32px;">🍃</div>
+    <div style="font-size:20px; font-weight:700;">로그인 중...</div>
+    <p>잠시만 기다려주세요</p>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+
+    if (!code) {
+      alert('로그인 실패! 다시 시도해주세요.');
+      window.location.href = '/leaf-clan/';
+    } else {
+      fetch('https://worker-production-cff5.up.railway.app/auth/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      })
+      .then(r => r.json())
+      .then(user => {
+        if (user.error) throw new Error(user.error);
+        localStorage.setItem('discord_user', JSON.stringify(user));
+        window.location.href = '/leaf-clan/';
+      })
+      .catch(err => {
+        alert('로그인 실패: ' + err.message);
+        window.location.href = '/leaf-clan/';
+      });
+    }
+  </script>
+</body>
+</html>
