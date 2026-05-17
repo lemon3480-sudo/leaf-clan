@@ -16,47 +16,34 @@
 
     .content { position: relative; z-index: 1; }
 
-    nav {
-      background: rgba(8,13,10,0.7); border-bottom: 1px solid rgba(57,255,20,0.2);
-      padding: 14px 24px; display: flex; align-items: center; justify-content: space-between;
-      backdrop-filter: blur(12px);
-    }
-    .logo {
-      font-family: 'Press Start 2P', monospace; font-size: 16px; color: #39ff14;
-      text-shadow: 0 0 8px rgba(57,255,20,0.9), 0 0 20px rgba(57,255,20,0.5), 0 0 40px rgba(57,255,20,0.3);
-      letter-spacing: 2px;
-    }
+    nav { background: rgba(8,13,10,0.7); border-bottom: 1px solid rgba(57,255,20,0.2); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(12px); }
+    .logo { font-family: 'Press Start 2P', monospace; font-size: 16px; color: #39ff14; text-shadow: 0 0 8px rgba(57,255,20,0.9), 0 0 20px rgba(57,255,20,0.5), 0 0 40px rgba(57,255,20,0.3); letter-spacing: 2px; }
     .nav-links { display: flex; gap: 32px; }
     .nav-links a { color: #8aaa90; text-decoration: none; font-size: 16px; font-weight: 600; transition: color 0.2s; cursor: pointer; }
     .nav-links a:hover { color: #39ff14; }
     .nav-links a.active { color: #39ff14; border-bottom: 2px solid #39ff14; padding-bottom: 2px; }
+    .nav-right { display: flex; align-items: center; }
+    #login-btn { background: rgba(88,101,242,0.15); border: 1px solid rgba(88,101,242,0.4); border-radius: 8px; padding: 8px 16px; color: #5865f2; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all 0.2s; }
+    #login-btn:hover { background: rgba(88,101,242,0.25); }
+    #user-info { display: none; align-items: center; gap: 10px; }
+    #user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(57,255,20,0.4); }
+    #user-name { font-size: 13px; font-weight: 600; color: #eee; }
+    .logout-btn { background: none; border: none; color: #4a6a50; font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; }
+    .logout-btn:hover { color: #aaa; }
 
     .page { display: none; }
     .page.active { display: block; }
 
     .hero { text-align: center; padding: 48px 24px 32px; border-bottom: 1px solid rgba(57,255,20,0.1); }
-    .hero h1 {
-      font-family: 'Press Start 2P', monospace; font-size: 28px; color: #39ff14;
-      text-shadow: 0 0 10px rgba(57,255,20,0.9), 0 0 30px rgba(57,255,20,0.5), 0 0 60px rgba(57,255,20,0.3);
-      margin-bottom: 10px; letter-spacing: 3px;
-    }
+    .hero h1 { font-family: 'Press Start 2P', monospace; font-size: 28px; color: #39ff14; text-shadow: 0 0 10px rgba(57,255,20,0.9), 0 0 30px rgba(57,255,20,0.5), 0 0 60px rgba(57,255,20,0.3); margin-bottom: 10px; letter-spacing: 3px; }
     .hero p { color: #6a8a70; font-size: 14px; }
-    .online-badge {
-      display: inline-flex; align-items: center; gap: 7px; margin-top: 12px;
-      background: rgba(57,255,20,0.07); border: 1px solid rgba(57,255,20,0.25);
-      border-radius: 20px; padding: 5px 16px; font-size: 12px; color: #39ff14;
-    }
+    .online-badge { display: inline-flex; align-items: center; gap: 7px; margin-top: 12px; background: rgba(57,255,20,0.07); border: 1px solid rgba(57,255,20,0.25); border-radius: 20px; padding: 5px 16px; font-size: 12px; color: #39ff14; }
     .dot { width: 6px; height: 6px; background: #39ff14; border-radius: 50%; animation: pulse 2s infinite; flex-shrink: 0; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
     .tier-section { padding: 24px; }
     .search-wrap { display: flex; justify-content: flex-end; margin-bottom: 14px; }
-    .search-box {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(10,20,13,0.8); border: 1px solid rgba(57,255,20,0.25);
-      border-radius: 8px; padding: 8px 14px; width: 240px;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
+    .search-box { display: flex; align-items: center; gap: 8px; background: rgba(10,20,13,0.8); border: 1px solid rgba(57,255,20,0.25); border-radius: 8px; padding: 8px 14px; width: 240px; transition: border-color 0.2s, box-shadow 0.2s; }
     .search-box:focus-within { border-color: rgba(57,255,20,0.6); box-shadow: 0 0 12px rgba(57,255,20,0.15); }
     .search-box i { font-size: 16px; color: #3a6040; flex-shrink: 0; }
     .search-box input { background: none; border: none; outline: none; color: #cce; font-size: 13px; width: 100%; font-family: 'Noto Sans KR', sans-serif; }
@@ -82,11 +69,7 @@
     .th-seed   { background: rgba(10,34,28,0.9); color: #40c8a0; }
     .tier-subheader { padding: 10px 16px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.04); }
 
-    .member-row {
-      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer;
-      transition: background 0.15s; position: relative;
-    }
+    .member-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; transition: background 0.15s; position: relative; }
     .member-row:last-child { border-bottom: none; }
     .col-head  .member-row:hover { background: rgba(245,197,24,0.08); }
     .col-elder .member-row:hover { background: rgba(232,216,122,0.07); }
@@ -103,12 +86,7 @@
     .loading { text-align: center; padding: 32px; color: #3a5a40; font-size: 13px; }
     .hidden { display: none !important; }
 
-    .hover-popup {
-      display: none; position: fixed;
-      background: rgba(6,14,8,0.99); border: 1px solid rgba(57,255,20,0.35);
-      border-radius: 10px; padding: 14px 16px; width: 220px; z-index: 200;
-      box-shadow: 0 0 24px rgba(57,255,20,0.2), 0 4px 20px rgba(0,0,0,0.6); pointer-events: none;
-    }
+    .hover-popup { display: none; position: fixed; background: rgba(6,14,8,0.99); border: 1px solid rgba(57,255,20,0.35); border-radius: 10px; padding: 14px 16px; width: 220px; z-index: 200; box-shadow: 0 0 24px rgba(57,255,20,0.2), 0 4px 20px rgba(0,0,0,0.6); pointer-events: none; }
     .hover-popup.active { display: block; }
     .popup-nick { font-size: 14px; font-weight: 700; color: #eef; margin-bottom: 10px; border-bottom: 1px solid rgba(57,255,20,0.15); padding-bottom: 8px; }
     .popup-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #7a9a80; margin-bottom: 6px; }
@@ -147,24 +125,10 @@
 
     .intro-section { padding: 24px 32px; max-width: 1300px; margin: 0 auto; }
     .intro-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-    .intro-card {
-      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 16px; padding: 20px; cursor: pointer;
-      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
-      backdrop-filter: blur(12px);
-      display: flex; flex-direction: column; gap: 14px;
-    }
-    .intro-card:hover {
-      transform: translateY(-5px);
-      border-color: rgba(57,255,20,0.5);
-      box-shadow: 0 0 24px rgba(57,255,20,0.2), 0 8px 32px rgba(0,0,0,0.4);
-    }
+    .intro-card { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 20px; cursor: pointer; transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s; backdrop-filter: blur(12px); display: flex; flex-direction: column; gap: 14px; }
+    .intro-card:hover { transform: translateY(-5px); border-color: rgba(57,255,20,0.5); box-shadow: 0 0 24px rgba(57,255,20,0.2), 0 8px 32px rgba(0,0,0,0.4); }
     .intro-card-top { display: flex; align-items: flex-start; gap: 14px; }
-    .intro-skin {
-      width: 64px; height: 64px; border-radius: 10px;
-      overflow: hidden; flex-shrink: 0;
-      background: rgba(57,255,20,0.08); border: 1px solid rgba(57,255,20,0.2);
-    }
+    .intro-skin { width: 64px; height: 64px; border-radius: 10px; overflow: hidden; flex-shrink: 0; background: rgba(57,255,20,0.08); border: 1px solid rgba(57,255,20,0.2); }
     .intro-skin img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
     .intro-card-info { flex: 1; min-width: 0; }
     .intro-nick { font-size: 17px; font-weight: 700; color: #eee; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -177,11 +141,7 @@
     .badge-seed   { background: rgba(64,200,160,0.08); color: #40c8a0; border: 1px solid rgba(64,200,160,0.15); }
     .badge-none   { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); }
     .intro-discord { font-size: 11px; color: rgba(255,255,255,0.3); }
-    .intro-text {
-      font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.7;
-      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
-      overflow: hidden; flex: 1;
-    }
+    .intro-text { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.7; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex: 1; }
     .intro-card-footer { display: flex; gap: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); }
     .intro-stat { display: flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(255,255,255,0.3); }
     .intro-stat i { font-size: 13px; }
@@ -203,12 +163,14 @@
     .board-sidebar { width: 240px; flex-shrink: 0; }
     .board-filter { display: flex; gap: 8px; margin-bottom: 20px; align-items: center; }
     .board-filter-label { font-size: 13px; color: rgba(255,255,255,0.4); margin-right: 4px; }
-    .filter-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 18px; color: rgba(255,255,255,0.5); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Noto Sans KR', sans-serif; backdrop-filter: blur(8px); }
+    .filter-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 18px; color: rgba(255,255,255,0.5); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Noto Sans KR', sans-serif; }
     .filter-btn.active { background: rgba(57,255,20,0.15); border-color: #39ff14; color: #39ff14; box-shadow: 0 0 12px rgba(57,255,20,0.3); }
     .filter-btn:hover { color: #39ff14; border-color: rgba(57,255,20,0.5); }
     .board-input-wrap { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px; margin-bottom: 20px; display: flex; gap: 14px; align-items: flex-start; backdrop-filter: blur(12px); }
     .board-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(57,255,20,0.1); border: 1px solid rgba(57,255,20,0.3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; color: rgba(255,255,255,0.5); }
+    .board-user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(57,255,20,0.3); flex-shrink: 0; display: none; }
     .board-input-right { flex: 1; }
+    .board-login-notice { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 10px; display: none; }
     .board-nickname { width: 160px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; color: #eee; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; outline: none; margin-bottom: 10px; transition: border-color 0.2s; }
     .board-nickname:focus { border-color: rgba(57,255,20,0.5); }
     .board-nickname::placeholder { color: rgba(255,255,255,0.25); }
@@ -222,6 +184,7 @@
     .board-post:hover { border-color: rgba(255,255,255,0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
     .board-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .post-avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; color: rgba(255,255,255,0.4); }
+    .post-avatar-img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0; }
     .post-nick { font-size: 14px; font-weight: 700; color: #eee; }
     .post-date { font-size: 11px; color: rgba(255,255,255,0.3); margin-left: auto; }
     .board-post-text { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.75; margin-bottom: 14px; padding-left: 48px; }
@@ -240,7 +203,8 @@
     .comment-submit { background: rgba(57,255,20,0.15); border: 1px solid rgba(57,255,20,0.4); border-radius: 8px; padding: 7px 14px; color: #39ff14; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; flex-shrink: 0; transition: background 0.2s; }
     .comment-submit:hover { background: rgba(57,255,20,0.25); }
     .comment-item { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-start; }
-    .comment-avatar { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; color: rgba(255,255,255,0.4); }
+    .comment-avatar { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; color: rgba(255,255,255,0.4); overflow: hidden; }
+    .comment-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .comment-body { flex: 1; }
     .comment-nick-text { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.8); margin-right: 8px; }
     .comment-text { font-size: 12px; color: rgba(255,255,255,0.55); }
@@ -279,6 +243,14 @@
       <a onclick="showPage('intro', this)">소개</a>
       <a onclick="showPage('video', this)">영상</a>
       <a onclick="showPage('board', this)">게시판</a>
+    </div>
+    <div class="nav-right">
+      <button id="login-btn" onclick="discordLogin()">🎮 디스코드 로그인</button>
+      <div id="user-info">
+        <img id="user-avatar" src="" alt="">
+        <span id="user-name"></span>
+        <button class="logout-btn" onclick="discordLogout()">로그아웃</button>
+      </div>
     </div>
   </nav>
 
@@ -357,8 +329,10 @@
           <button class="filter-btn" id="filter-popular" onclick="setFilter('popular')">인기순</button>
         </div>
         <div class="board-input-wrap">
-          <div class="board-avatar">?</div>
+          <img class="board-user-avatar" id="board-user-avatar" src="" alt="">
+          <div class="board-avatar" id="board-avatar-placeholder">?</div>
           <div class="board-input-right">
+            <div class="board-login-notice" id="board-login-notice">🎮 <span id="board-user-name-display"></span> 으로 게시돼요</div>
             <input class="board-nickname" id="boardNick" placeholder="닉네임 입력..." maxlength="20">
             <textarea class="board-textarea" id="boardInput" placeholder="글을 작성하세요..."></textarea>
             <div class="board-input-footer">
@@ -426,6 +400,10 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  const DISCORD_CLIENT_ID = '1504886311046217779';
+  const DISCORD_REDIRECT = 'https://lemon3480-sudo.github.io/leaf-clan/callback';
+  const SERVER_URL = 'https://worker-production-cff5.up.railway.app';
+
   const bgImages = {
     members: 'https://lemon3480-sudo.github.io/leaf-clan/images/bg.png',
     intro:   'https://lemon3480-sudo.github.io/leaf-clan/images/bg.png',
@@ -440,6 +418,43 @@
     if (el) el.classList.add('active');
     document.getElementById('bgImg').src = bgImages[page] || bgImages.members;
   }
+
+  function loadDiscordUser() {
+    const user = JSON.parse(localStorage.getItem('discord_user') || 'null');
+    if (user) {
+      document.getElementById('login-btn').style.display = 'none';
+      document.getElementById('user-info').style.display = 'flex';
+      document.getElementById('user-avatar').src = user.avatar;
+      document.getElementById('user-name').textContent = user.global_name || user.username;
+      document.getElementById('board-user-avatar').style.display = 'block';
+      document.getElementById('board-user-avatar').src = user.avatar;
+      document.getElementById('board-avatar-placeholder').style.display = 'none';
+      document.getElementById('board-login-notice').style.display = 'block';
+      document.getElementById('board-user-name-display').textContent = user.global_name || user.username;
+      document.getElementById('boardNick').style.display = 'none';
+    }
+  }
+
+  window.discordLogin = function() {
+    const url = 'https://discord.com/oauth2/authorize'
+      + '?client_id=' + DISCORD_CLIENT_ID
+      + '&redirect_uri=' + encodeURIComponent(DISCORD_REDIRECT)
+      + '&response_type=code'
+      + '&scope=identify';
+    window.location.href = url;
+  }
+
+  window.discordLogout = function() {
+    localStorage.removeItem('discord_user');
+    document.getElementById('login-btn').style.display = 'block';
+    document.getElementById('user-info').style.display = 'none';
+    document.getElementById('board-user-avatar').style.display = 'none';
+    document.getElementById('board-avatar-placeholder').style.display = 'flex';
+    document.getElementById('board-login-notice').style.display = 'none';
+    document.getElementById('boardNick').style.display = 'block';
+  }
+
+  loadDiscordUser();
 
   const roleConfig = {
     Head:   { color: 'r-head',   label: '👑 Head' },
@@ -465,13 +480,8 @@
     MACE:  'https://lemon3480-sudo.github.io/leaf-clan/images/mace.png',
   };
 
-  function skinUrl(nick, size) {
-    return 'https://visage.surgeplay.com/bust/' + size + '/' + nick;
-  }
-
-  function faceUrl(nick) {
-    return 'https://visage.surgeplay.com/face/64/' + nick;
-  }
+  function skinUrl(nick, size) { return 'https://visage.surgeplay.com/bust/' + size + '/' + nick; }
+  function faceUrl(nick) { return 'https://visage.surgeplay.com/face/64/' + nick; }
 
   function formatDate(ts) {
     if (!ts) return '정보 없음';
@@ -623,9 +633,12 @@
     sorted.forEach(p => {
       const div = document.createElement('div');
       div.className = 'board-post';
+      const avatarHtml = p.avatar
+        ? '<img class="post-avatar-img" src="' + p.avatar + '" alt="">'
+        : '<div class="post-avatar">?</div>';
       div.innerHTML =
         '<div class="board-post-header">'
-        + '<div class="post-avatar">?</div>'
+        + avatarHtml
         + '<span class="post-nick">' + (p.nick || '익명').replace(/</g,'&lt;') + '</span>'
         + '<span class="post-date">' + formatDate(p.createdAt) + '</span>'
         + '</div>'
@@ -655,8 +668,11 @@
       clist.innerHTML = '';
       snap.forEach(d => {
         const c = d.data();
+        const avatarHtml = c.avatar
+          ? '<div class="comment-avatar"><img src="' + c.avatar + '" alt=""></div>'
+          : '<div class="comment-avatar">?</div>';
         clist.innerHTML += '<div class="comment-item">'
-          + '<div class="comment-avatar">?</div>'
+          + avatarHtml
           + '<div class="comment-body">'
           + '<span class="comment-nick-text">' + (c.nick||'익명').replace(/</g,'&lt;') + '</span>'
           + '<span class="comment-text">' + (c.text||'').replace(/</g,'&lt;') + '</span>'
@@ -682,10 +698,14 @@
   }
 
   window.submitComment = async function(postId) {
-    const nick = document.getElementById('cnick-' + postId).value.trim() || '익명';
+    const discordUser = JSON.parse(localStorage.getItem('discord_user') || 'null');
+    const nick = discordUser
+      ? (discordUser.global_name || discordUser.username)
+      : (document.getElementById('cnick-' + postId).value.trim() || '익명');
+    const avatar = discordUser ? discordUser.avatar : null;
     const text = document.getElementById('cinput-' + postId).value.trim();
     if (!text) return;
-    await addDoc(collection(db, 'posts', postId, 'comments'), { nick, text, createdAt: serverTimestamp() });
+    await addDoc(collection(db, 'posts', postId, 'comments'), { nick, text, avatar, createdAt: serverTimestamp() });
     document.getElementById('cinput-' + postId).value = '';
   }
 
@@ -706,10 +726,15 @@
   });
 
   window.submitPost = async function() {
-    const nick = document.getElementById('boardNick').value.trim() || '익명';
     const text = document.getElementById('boardInput').value.trim();
     if (!text) return;
-    await addDoc(collection(db, "posts"), { nick, text, likes: 0, createdAt: serverTimestamp() });
+    const discordUser = JSON.parse(localStorage.getItem('discord_user') || 'null');
+    const nick = discordUser
+      ? (discordUser.global_name || discordUser.username)
+      : (document.getElementById('boardNick').value.trim() || '익명');
+    const avatar = discordUser ? discordUser.avatar : null;
+    const discordId = discordUser ? discordUser.id : null;
+    await addDoc(collection(db, "posts"), { nick, text, likes: 0, avatar, discordId, createdAt: serverTimestamp() });
     document.getElementById('boardInput').value = '';
   }
 
@@ -738,4 +763,4 @@
 </script>
 
 </body>
-</html>
+          </html>
