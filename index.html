@@ -45,7 +45,6 @@
     .search-wrap { display: flex; justify-content: flex-end; margin-bottom: 14px; }
     .search-box { display: flex; align-items: center; gap: 8px; background: rgba(10,20,13,0.8); border: 1px solid rgba(57,255,20,0.25); border-radius: 8px; padding: 8px 14px; width: 240px; transition: border-color 0.2s, box-shadow 0.2s; }
     .search-box:focus-within { border-color: rgba(57,255,20,0.6); box-shadow: 0 0 12px rgba(57,255,20,0.15); }
-    .search-box i { font-size: 16px; color: #3a6040; flex-shrink: 0; }
     .search-box input { background: none; border: none; outline: none; color: #cce; font-size: 13px; width: 100%; font-family: 'Noto Sans KR', sans-serif; }
     .search-box input::placeholder { color: #3a5a40; }
 
@@ -91,7 +90,6 @@
     .popup-nick { font-size: 14px; font-weight: 700; color: #eef; margin-bottom: 10px; border-bottom: 1px solid rgba(57,255,20,0.15); padding-bottom: 8px; }
     .popup-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #7a9a80; margin-bottom: 6px; }
     .popup-row:last-child { margin-bottom: 0; }
-    .popup-row i { font-size: 14px; color: #39ff14; flex-shrink: 0; }
     .popup-val { color: #aac; }
 
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
@@ -144,7 +142,6 @@
     .intro-text { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.7; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; flex: 1; }
     .intro-card-footer { display: flex; gap: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); }
     .intro-stat { display: flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(255,255,255,0.3); }
-    .intro-stat i { font-size: 13px; }
     .intro-empty { text-align: center; padding: 60px; color: rgba(255,255,255,0.25); font-size: 14px; grid-column: 1/-1; }
 
     .video-section { padding: 24px; }
@@ -166,20 +163,28 @@
     .filter-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 18px; color: rgba(255,255,255,0.5); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Noto Sans KR', sans-serif; }
     .filter-btn.active { background: rgba(57,255,20,0.15); border-color: #39ff14; color: #39ff14; box-shadow: 0 0 12px rgba(57,255,20,0.3); }
     .filter-btn:hover { color: #39ff14; border-color: rgba(57,255,20,0.5); }
-    .board-input-wrap { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px; margin-bottom: 20px; display: flex; gap: 14px; align-items: flex-start; backdrop-filter: blur(12px); }
+
+    .board-input-container { position: relative; margin-bottom: 20px; }
+    .board-input-wrap { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px; display: flex; gap: 14px; align-items: flex-start; backdrop-filter: blur(12px); }
+    .board-locked-overlay { position: absolute; inset: 0; backdrop-filter: blur(6px); background: rgba(0,0,0,0.5); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 10; }
+    .board-locked-overlay p { font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 600; text-align: center; line-height: 1.7; }
+    .board-lock-btn { background: rgba(88,101,242,0.2); border: 1px solid rgba(88,101,242,0.5); border-radius: 8px; padding: 10px 20px; color: #5865f2; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all 0.2s; }
+    .board-lock-btn:hover { background: rgba(88,101,242,0.35); }
+
     .board-avatar { width: 42px; height: 42px; border-radius: 50%; background: rgba(57,255,20,0.1); border: 1px solid rgba(57,255,20,0.3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; color: rgba(255,255,255,0.5); }
     .board-user-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(57,255,20,0.3); flex-shrink: 0; display: none; }
     .board-input-right { flex: 1; }
-    .board-login-notice { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 10px; display: none; }
-    .board-nickname { width: 160px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; color: #eee; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; outline: none; margin-bottom: 10px; transition: border-color 0.2s; }
-    .board-nickname:focus { border-color: rgba(57,255,20,0.5); }
-    .board-nickname::placeholder { color: rgba(255,255,255,0.25); }
+    .nick-toggle { display: flex; gap: 8px; margin-bottom: 10px; }
+    .nick-toggle-btn { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); }
+    .nick-toggle-btn.active { background: rgba(57,255,20,0.15); border-color: #39ff14; color: #39ff14; }
+    .board-login-notice { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 10px; display: none; }
     .board-textarea { width: 100%; background: rgba(57,255,20,0.05); border: 1px solid #39ff14; border-radius: 10px; padding: 12px 14px; color: #eee; font-size: 14px; font-family: 'Noto Sans KR', sans-serif; resize: none; outline: none; transition: box-shadow 0.2s; height: 90px; box-shadow: 0 0 12px rgba(57,255,20,0.2), inset 0 0 20px rgba(57,255,20,0.05); }
     .board-textarea:focus { box-shadow: 0 0 20px rgba(57,255,20,0.4), inset 0 0 20px rgba(57,255,20,0.08); }
     .board-textarea::placeholder { color: rgba(255,255,255,0.25); }
     .board-input-footer { display: flex; justify-content: flex-end; margin-top: 10px; }
     .board-submit { background: #39ff14; border: none; border-radius: 8px; padding: 10px 22px; color: #050f05; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Noto Sans KR', sans-serif; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 16px rgba(57,255,20,0.4); }
     .board-submit:hover { background: #5fff35; box-shadow: 0 0 24px rgba(57,255,20,0.6); }
+
     .board-post { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin-bottom: 14px; transition: border-color 0.2s, box-shadow 0.2s; backdrop-filter: blur(12px); }
     .board-post:hover { border-color: rgba(255,255,255,0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
     .board-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -192,12 +197,13 @@
     .action-btn { display: flex; align-items: center; gap: 5px; background: none; border: none; color: rgba(255,255,255,0.35); font-size: 13px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: color 0.2s; padding: 0; }
     .action-btn:hover { color: rgba(255,255,255,0.7); }
     .action-btn.liked { color: #39ff14; }
-    .action-btn i { font-size: 15px; }
+
     .comment-wrap { margin-top: 14px; padding-left: 48px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px; display: none; }
     .comment-wrap.open { display: block; }
     .comment-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
-    .comment-nick { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 7px 10px; color: #eee; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; outline: none; width: 90px; flex-shrink: 0; }
-    .comment-nick::placeholder { color: rgba(255,255,255,0.25); }
+    .comment-nick-toggle { display: flex; gap: 6px; margin-bottom: 8px; }
+    .comment-nick-btn { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); transition: all 0.2s; }
+    .comment-nick-btn.active { background: rgba(57,255,20,0.1); border-color: rgba(57,255,20,0.4); color: #39ff14; }
     .comment-input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 7px 10px; color: #eee; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; outline: none; }
     .comment-input::placeholder { color: rgba(255,255,255,0.25); }
     .comment-submit { background: rgba(57,255,20,0.15); border: 1px solid rgba(57,255,20,0.4); border-radius: 8px; padding: 7px 14px; color: #39ff14; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; flex-shrink: 0; transition: background 0.2s; }
@@ -209,6 +215,7 @@
     .comment-nick-text { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.8); margin-right: 8px; }
     .comment-text { font-size: 12px; color: rgba(255,255,255,0.55); }
     .comment-date { font-size: 10px; color: rgba(255,255,255,0.25); margin-top: 2px; }
+
     .board-sidebar-card { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; backdrop-filter: blur(12px); }
     .sidebar-clan-logo { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; margin: 0 auto 12px; border: 2px solid rgba(57,255,20,0.4); }
     .sidebar-clan-logo img { width: 100%; height: 100%; object-fit: cover; }
@@ -230,9 +237,9 @@
 
 <div class="hover-popup" id="hoverPopup">
   <div class="popup-nick" id="popup-nick"></div>
-  <div class="popup-row"><i class="ti ti-id-badge" aria-hidden="true"></i><span style="color:#7a9a80;font-size:12px;">콜사인&nbsp;</span><span class="popup-val" id="popup-callsign"></span></div>
-  <div class="popup-row"><i class="ti ti-at" aria-hidden="true"></i><span class="popup-val" id="popup-discord"></span></div>
-  <div class="popup-row"><i class="ti ti-calendar" aria-hidden="true"></i><span class="popup-val" id="popup-join"></span></div>
+  <div class="popup-row"><span style="color:#7a9a80;font-size:12px;">콜사인&nbsp;</span><span class="popup-val" id="popup-callsign"></span></div>
+  <div class="popup-row"><span class="popup-val" id="popup-discord"></span></div>
+  <div class="popup-row"><span class="popup-val" id="popup-join"></span></div>
 </div>
 
 <div class="content">
@@ -263,7 +270,6 @@
     <div class="tier-section">
       <div class="search-wrap">
         <div class="search-box">
-          <i class="ti ti-search" aria-hidden="true"></i>
           <input type="text" id="searchInput" placeholder="닉네임 검색...">
         </div>
       </div>
@@ -328,20 +334,31 @@
           <button class="filter-btn active" id="filter-recent" onclick="setFilter('recent')">최신순</button>
           <button class="filter-btn" id="filter-popular" onclick="setFilter('popular')">인기순</button>
         </div>
-        <div class="board-input-wrap">
-          <img class="board-user-avatar" id="board-user-avatar" src="" alt="">
-          <div class="board-avatar" id="board-avatar-placeholder">?</div>
-          <div class="board-input-right">
-            <div class="board-login-notice" id="board-login-notice">🎮 <span id="board-user-name-display"></span> 으로 게시돼요</div>
-            <input class="board-nickname" id="boardNick" placeholder="닉네임 입력..." maxlength="20">
-            <textarea class="board-textarea" id="boardInput" placeholder="글을 작성하세요..."></textarea>
-            <div class="board-input-footer">
-              <button class="board-submit" onclick="submitPost()">
-                <i class="ti ti-send" aria-hidden="true"></i> 게시하기
-              </button>
+
+        <div class="board-input-container">
+          <div class="board-input-wrap">
+            <img class="board-user-avatar" id="board-user-avatar" src="" alt="">
+            <div class="board-avatar" id="board-avatar-placeholder">?</div>
+            <div class="board-input-right">
+              <div class="nick-toggle" id="nick-toggle" style="display:none;">
+                <button class="nick-toggle-btn active" id="btn-anon" onclick="setNickMode('anon')">🎭 익명</button>
+                <button class="nick-toggle-btn" id="btn-real" onclick="setNickMode('real')">🎮 내 아이디</button>
+              </div>
+              <div class="board-login-notice" id="board-login-notice"></div>
+              <textarea class="board-textarea" id="boardInput" placeholder="글을 작성하세요..."></textarea>
+              <div class="board-input-footer">
+                <button class="board-submit" onclick="submitPost()">
+                  ✈ 게시하기
+                </button>
+              </div>
             </div>
           </div>
+          <div class="board-locked-overlay" id="board-locked-overlay">
+            <p>🔒 디스코드 연동 후에<br>게시글 작성이 가능합니다</p>
+            <button class="board-lock-btn" onclick="discordLogin()">🎮 디스코드 로그인</button>
+          </div>
         </div>
+
         <div id="boardPosts"></div>
       </div>
       <div class="board-sidebar">
@@ -402,7 +419,6 @@
 
   const DISCORD_CLIENT_ID = '1504886311046217779';
   const DISCORD_REDIRECT = 'https://lemon3480-sudo.github.io/leaf-clan/callback';
-  const SERVER_URL = 'https://worker-production-cff5.up.railway.app';
 
   const bgImages = {
     members: 'https://lemon3480-sudo.github.io/leaf-clan/images/bg.png',
@@ -419,6 +435,27 @@
     document.getElementById('bgImg').src = bgImages[page] || bgImages.members;
   }
 
+  let nickMode = 'anon';
+
+  window.setNickMode = function(mode) {
+    nickMode = mode;
+    document.getElementById('btn-anon').classList.toggle('active', mode === 'anon');
+    document.getElementById('btn-real').classList.toggle('active', mode === 'real');
+    const user = JSON.parse(localStorage.getItem('discord_user') || 'null');
+    if (!user) return;
+    const notice = document.getElementById('board-login-notice');
+    notice.style.display = 'block';
+    if (mode === 'anon') {
+      notice.textContent = '🎭 익명으로 게시돼요 (관리자에게만 본인 확인 가능)';
+      document.getElementById('board-user-avatar').style.display = 'none';
+      document.getElementById('board-avatar-placeholder').style.display = 'flex';
+    } else {
+      notice.textContent = '🎮 ' + (user.global_name || user.username) + ' 으로 게시돼요';
+      document.getElementById('board-user-avatar').style.display = 'block';
+      document.getElementById('board-avatar-placeholder').style.display = 'none';
+    }
+  }
+
   function loadDiscordUser() {
     const user = JSON.parse(localStorage.getItem('discord_user') || 'null');
     if (user) {
@@ -426,12 +463,14 @@
       document.getElementById('user-info').style.display = 'flex';
       document.getElementById('user-avatar').src = user.avatar;
       document.getElementById('user-name').textContent = user.global_name || user.username;
-      document.getElementById('board-user-avatar').style.display = 'block';
       document.getElementById('board-user-avatar').src = user.avatar;
-      document.getElementById('board-avatar-placeholder').style.display = 'none';
-      document.getElementById('board-login-notice').style.display = 'block';
-      document.getElementById('board-user-name-display').textContent = user.global_name || user.username;
-      document.getElementById('boardNick').style.display = 'none';
+      document.getElementById('board-locked-overlay').style.display = 'none';
+      document.getElementById('nick-toggle').style.display = 'flex';
+      setNickMode('anon');
+    } else {
+      document.getElementById('board-locked-overlay').style.display = 'flex';
+      document.getElementById('nick-toggle').style.display = 'none';
+      document.getElementById('board-login-notice').style.display = 'none';
     }
   }
 
@@ -450,8 +489,9 @@
     document.getElementById('user-info').style.display = 'none';
     document.getElementById('board-user-avatar').style.display = 'none';
     document.getElementById('board-avatar-placeholder').style.display = 'flex';
+    document.getElementById('board-locked-overlay').style.display = 'flex';
+    document.getElementById('nick-toggle').style.display = 'none';
     document.getElementById('board-login-notice').style.display = 'none';
-    document.getElementById('boardNick').style.display = 'block';
   }
 
   loadDiscordUser();
@@ -585,7 +625,7 @@
         + '</div></div>'
         + '<div class="intro-text">' + (v.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
         + '<div class="intro-card-footer">'
-        + '<span class="intro-stat"><i class="ti ti-calendar" aria-hidden="true"></i> ' + joinDate + '</span>'
+        + '<span class="intro-stat"> ' + joinDate + '</span>'
         + '</div>';
       grid.appendChild(card);
     });
@@ -636,6 +676,8 @@
       const avatarHtml = p.avatar
         ? '<img class="post-avatar-img" src="' + p.avatar + '" alt="">'
         : '<div class="post-avatar">?</div>';
+      const discordUser = JSON.parse(localStorage.getItem('discord_user') || 'null');
+      const canComment = !!discordUser;
       div.innerHTML =
         '<div class="board-post-header">'
         + avatarHtml
@@ -645,20 +687,34 @@
         + '<div class="board-post-text">' + (p.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
         + '<div class="board-post-actions">'
         + '<button class="action-btn' + (p.liked ? ' liked' : '') + '" onclick="toggleLike(\'' + p.id + '\', this)">❤️ ' + (p.likes || 0) + '</button>'
-        + '<button class="action-btn" onclick="toggleComment(\'' + p.id + '\')"><i class="ti ti-message" aria-hidden="true"></i> 댓글</button>'
-        + '<button class="action-btn" onclick="sharePost(\'' + p.id + '\')"><i class="ti ti-share" aria-hidden="true"></i> 공유</button>'
+        + '<button class="action-btn" onclick="toggleComment(\'' + p.id + '\')">💬 댓글</button>'
+        + '<button class="action-btn" onclick="sharePost(\'' + p.id + '\')">🔗 공유</button>'
         + '</div>'
         + '<div class="comment-wrap" id="comments-' + p.id + '">'
-        + '<div class="comment-input-row">'
-        + '<input class="comment-nick" id="cnick-' + p.id + '" placeholder="닉네임...">'
-        + '<input class="comment-input" id="cinput-' + p.id + '" placeholder="댓글 입력...">'
-        + '<button class="comment-submit" onclick="submitComment(\'' + p.id + '\')">등록</button>'
-        + '</div>'
+        + (canComment
+          ? '<div class="comment-nick-toggle">'
+            + '<button class="comment-nick-btn active" id="cbtn-anon-' + p.id + '" onclick="setCommentMode(\'' + p.id + '\',\'anon\')">🎭 익명</button>'
+            + '<button class="comment-nick-btn" id="cbtn-real-' + p.id + '" onclick="setCommentMode(\'' + p.id + '\',\'real\')">🎮 내 아이디</button>'
+            + '</div>'
+            + '<div class="comment-input-row">'
+            + '<input class="comment-input" id="cinput-' + p.id + '" placeholder="댓글 입력...">'
+            + '<button class="comment-submit" onclick="submitComment(\'' + p.id + '\')">등록</button>'
+            + '</div>'
+          : '<p style="font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:10px;">💬 댓글을 달려면 디스코드 로그인이 필요해요</p>'
+        )
         + '<div id="clist-' + p.id + '"></div>'
         + '</div>';
       container.appendChild(div);
       loadComments(p.id);
     });
+  }
+
+  const commentModes = {};
+
+  window.setCommentMode = function(postId, mode) {
+    commentModes[postId] = mode;
+    document.getElementById('cbtn-anon-' + postId).classList.toggle('active', mode === 'anon');
+    document.getElementById('cbtn-real-' + postId).classList.toggle('active', mode === 'real');
   }
 
   async function loadComments(postId) {
@@ -699,13 +755,20 @@
 
   window.submitComment = async function(postId) {
     const discordUser = JSON.parse(localStorage.getItem('discord_user') || 'null');
-    const nick = discordUser
-      ? (discordUser.global_name || discordUser.username)
-      : (document.getElementById('cnick-' + postId).value.trim() || '익명');
-    const avatar = discordUser ? discordUser.avatar : null;
+    if (!discordUser) return;
     const text = document.getElementById('cinput-' + postId).value.trim();
     if (!text) return;
-    await addDoc(collection(db, 'posts', postId, 'comments'), { nick, text, avatar, createdAt: serverTimestamp() });
+    const mode = commentModes[postId] || 'anon';
+    const isAnon = mode === 'anon';
+    const nick = isAnon ? '익명' : (discordUser.global_name || discordUser.username);
+    const avatar = isAnon ? null : discordUser.avatar;
+    await addDoc(collection(db, 'posts', postId, 'comments'), {
+      nick, text, avatar,
+      realNick: discordUser.global_name || discordUser.username,
+      discordId: discordUser.id,
+      isAnon,
+      createdAt: serverTimestamp()
+    });
     document.getElementById('cinput-' + postId).value = '';
   }
 
@@ -729,12 +792,18 @@
     const text = document.getElementById('boardInput').value.trim();
     if (!text) return;
     const discordUser = JSON.parse(localStorage.getItem('discord_user') || 'null');
-    const nick = discordUser
-      ? (discordUser.global_name || discordUser.username)
-      : (document.getElementById('boardNick').value.trim() || '익명');
-    const avatar = discordUser ? discordUser.avatar : null;
-    const discordId = discordUser ? discordUser.id : null;
-    await addDoc(collection(db, "posts"), { nick, text, likes: 0, avatar, discordId, createdAt: serverTimestamp() });
+    if (!discordUser) return;
+    const isAnon = nickMode === 'anon';
+    const nick = isAnon ? '익명' : (discordUser.global_name || discordUser.username);
+    const avatar = isAnon ? null : discordUser.avatar;
+    await addDoc(collection(db, "posts"), {
+      nick, text, likes: 0, avatar,
+      realNick: discordUser.global_name || discordUser.username,
+      realAvatar: discordUser.avatar,
+      discordId: discordUser.id,
+      isAnon,
+      createdAt: serverTimestamp()
+    });
     document.getElementById('boardInput').value = '';
   }
 
@@ -763,4 +832,4 @@
 </script>
 
 </body>
-          </html>
+</html>
