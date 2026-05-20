@@ -250,6 +250,7 @@
       <a onclick="showPage('intro', this)">소개</a>
       <a onclick="showPage('video', this)">영상</a>
       <a onclick="showPage('board', this)">게시판</a>
+      <a onclick="showPage('game', this)">게임</a>
     </div>
     <div class="nav-right">
       <button id="login-btn" onclick="discordLogin()">🎮 디스코드 로그인</button>
@@ -379,6 +380,32 @@
   </div>
 </div>
 
+  <div id="page-game" class="page">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;">
+      <canvas id="gameCanvas" width="700" height="500" style="border:2px solid rgba(57,255,20,0.3);border-radius:12px;background:#87CEEB;display:block;max-width:100%;"></canvas>
+      <div id="gameOverlay" style="position:absolute;background:rgba(0,0,0,0.8);border:2px solid rgba(57,255,20,0.3);border-radius:12px;width:700px;max-width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px;color:#fff;">
+        <div style="font-family:'Press Start 2P',monospace;font-size:20px;color:#39ff14;text-shadow:0 0 10px #39ff14;">LEAF GAME</div>
+        <div id="gameLoginInfo" style="font-size:12px;color:#aaa;text-align:center;"></div>
+        <div style="font-size:11px;color:#ccc;text-align:center;line-height:2.2;">
+          A = 왼쪽 &nbsp; D = 오른쪽 &nbsp; SPACE = 점프 &nbsp; SHIFT = 웅크리기<br>
+          💎 +10,000 &nbsp; 💚 +30,000 &nbsp; 🟡 +5,000<br>
+          ❤️ +체력1 &nbsp; 🏹 -체력1 &nbsp; 💣 점수÷2
+        </div>
+        <div id="gameRankDisplay" style="background:rgba(0,0,0,0.5);border:2px solid #f5c518;border-radius:8px;padding:12px 24px;min-width:220px;">
+          <div style="color:#f5c518;font-family:'Press Start 2P',monospace;font-size:10px;margin-bottom:8px;text-align:center;">🏆 TOP 3</div>
+          <div id="rankListOverlay"></div>
+        </div>
+        <button id="startBtn" style="background:#2d8a2d;border:3px solid #1a5c1a;color:#fff;font-family:'Press Start 2P',monospace;font-size:11px;padding:12px 28px;cursor:pointer;border-radius:4px;">게임 시작</button>
+      </div>
+    </div>
+    <div id="gameHUD" style="display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);display:none;gap:20px;z-index:50;pointer-events:none;">
+      <div style="background:rgba(0,0,0,0.7);border:2px solid #555;border-radius:6px;padding:6px 14px;color:#fff;font-family:'Press Start 2P',monospace;font-size:11px;">
+        <div id="hudHearts" style="font-size:16px;">❤️❤️❤️</div>
+        <div id="hudScore">SCORE: 0</div>
+      </div>
+    </div>
+  </div>
+
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal">
     <button class="close-btn" onclick="closeModal()">x</button>
@@ -425,6 +452,7 @@
     intro:   'https://lemon3480-sudo.github.io/leaf-clan/images/bg.png',
     video:   'https://lemon3480-sudo.github.io/leaf-clan/images/vedio.png',
     board:   'https://lemon3480-sudo.github.io/leaf-clan/images/chat.png',
+    game:    'https://lemon3480-sudo.github.io/leaf-clan/images/bg.png',
   };
 
   window.showPage = function(page, el) {
@@ -829,6 +857,281 @@
       document.getElementById('modal').classList.remove('active');
     }
   }
+
+  // ===== MINI GAME =====
+  const GAME_W = 700, GAME_H = 500;
+  const GROUND_Y = GAME_H - 80;
+  const GRAVITY = 0.55;
+  const JUMP_FORCE = -13;
+  let gameRunning = false, gameOver = false;
+  let gameScore = 0, gameHearts = 3;
+  let gameItems = [], gameParticles = [];
+  let gameScoreTimer = 0, gameSpawnTimer = 0;
+  let gamePlayer = null;
+  let gameKeys = {};
+  let gameSkinImg = null;
+  let gameRankings = JSON.parse(localStorage.getItem('leafGameRank') || '[]');
+  let gameAnimFrame = null;
+
+  function gameUpdateRank() {
+    const top3 = gameRankings.slice(0,3);
+    const medals = ['🥇','🥈','🥉'];
+    ['rankListOverlay','rankListEnd'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.innerHTML = top3.length === 0
+        ? '<div style="font-size:9px;color:#888;font-family:monospace;">아직 기록 없음</div>'
+        : top3.map((r,i) => `<div style="display:flex;justify-content:space-between;gap:16px;font-size:9px;color:#ddd;font-family:monospace;padding:3px 0;border-bottom:1px solid #333;">${medals[i]} ${r.name}<span>${r.score.toLocaleString()}</span></div>`).join('');
+    });
+  }
+  gameUpdateRank();
+
+  function gameSaveRank(name, s) {
+    gameRankings.push({ name, score: s });
+    gameRankings.sort((a,b) => b.score - a.score);
+    gameRankings = gameRankings.slice(0,10);
+    localStorage.setItem('leafGameRank', JSON.stringify(gameRankings));
+    gameUpdateRank();
+  }
+
+  const ITEM_TYPES = [
+    { type:'diamond', emoji:'💎', score:10000, hp:0, size:22, chance:8 },
+    { type:'emerald', emoji:'💚', score:30000, hp:0, size:22, chance:4 },
+    { type:'gold',    emoji:'🟡', score:5000,  hp:0, size:22, chance:12 },
+    { type:'heart',   emoji:'❤️', score:0,     hp:1, size:20, chance:8 },
+    { type:'arrow',   emoji:'🏹', score:0,    hp:-1, size:22, chance:15 },
+    { type:'tnt',     emoji:'💣', score:-1,    hp:0, size:24, chance:6 },
+  ];
+
+  function gameSpawnItem() {
+    const total = ITEM_TYPES.reduce((a,b) => a+b.chance, 0);
+    let r = Math.random() * total;
+    let chosen = ITEM_TYPES[0];
+    for (const t of ITEM_TYPES) { r -= t.chance; if (r <= 0) { chosen = t; break; } }
+    gameItems.push({
+      ...chosen,
+      x: Math.random() * (GAME_W - 40) + 20,
+      y: -30,
+      vy: 1.8 + Math.random() * 2.2,
+      rot: 0,
+      rotSpeed: (Math.random() - 0.5) * 0.12,
+    });
+  }
+
+  function gameDrawBg(ctx) {
+    const sky = ctx.createLinearGradient(0,0,0,GROUND_Y);
+    sky.addColorStop(0,'#5bbdda');
+    sky.addColorStop(1,'#a8d8ea');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0,0,GAME_W,GROUND_Y);
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    [[80,55,65,22],[220,38,90,20],[420,65,110,28],[590,48,75,20]].forEach(([x,y,rx,ry]) => {
+      ctx.beginPath(); ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(x+28,y-10,rx*0.65,ry*0.65,0,0,Math.PI*2); ctx.fill();
+    });
+    ctx.fillStyle = '#5a8a3a'; ctx.fillRect(0,GROUND_Y,GAME_W,18);
+    ctx.fillStyle = '#7ab648'; ctx.fillRect(0,GROUND_Y+2,GAME_W,6);
+    ctx.fillStyle = '#8B6914'; ctx.fillRect(0,GROUND_Y+18,GAME_W,GAME_H-GROUND_Y-18);
+    const bx = [50,180,320,500,640];
+    bx.forEach(x => {
+      ctx.fillStyle='#6b4c1e'; ctx.fillRect(x,GROUND_Y+18,14,16);
+      ctx.fillStyle='#5a8a3a'; ctx.fillRect(x-8,GROUND_Y+18,30,8);
+    });
+    const trees = [[60,GROUND_Y-70],[320,GROUND_Y-55],[640,GROUND_Y-75]];
+    trees.forEach(([x,by]) => {
+      ctx.fillStyle='#7a5c2a'; ctx.fillRect(x-6,by+40,12,GROUND_Y-by-40);
+      ctx.fillStyle='#2d7a2d';
+      ctx.beginPath(); ctx.arc(x,by+20,28,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x,by,22,0,Math.PI*2); ctx.fill();
+    });
+  }
+
+  function gameDrawPlayer(ctx, p) {
+    const cx = p.x + p.w/2;
+    const by = p.y + p.h;
+    const cr = p.crouching;
+    const headSize = 22;
+    const bodyH = cr ? 16 : 24;
+    const legH = cr ? 10 : 16;
+    const headY = by - legH - bodyH - headSize + (cr ? 8 : 0);
+
+    ctx.fillStyle = '#3a7d44';
+    ctx.fillRect(cx-10, by-legH, 9, legH);
+    ctx.fillRect(cx+1, by-legH, 9, legH);
+    ctx.fillStyle = '#2e5e99';
+    ctx.fillRect(cx-12, headY+headSize, 24, bodyH);
+    ctx.fillStyle = '#f5c07a';
+    ctx.fillRect(cx-11, headY, headSize, headSize);
+    if (gameSkinImg && gameSkinImg.complete && gameSkinImg.naturalWidth > 0) {
+      ctx.drawImage(gameSkinImg, cx-11, headY, headSize, headSize);
+    } else {
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(cx-9, headY+7, 4, 4);
+      ctx.fillRect(cx+5, headY+7, 4, 4);
+      ctx.fillRect(cx-5, headY+14, 10, 3);
+    }
+    ctx.fillStyle = '#f5c07a';
+    ctx.fillRect(cx-17, headY+headSize+2, 6, cr?10:18);
+    ctx.fillRect(cx+11, headY+headSize+2, 6, cr?10:18);
+  }
+
+  function gameDrawItem(ctx, item) {
+    ctx.save();
+    ctx.translate(item.x, item.y);
+    ctx.rotate(item.rot);
+    ctx.font = item.size + 'px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(item.emoji, 0, 0);
+    ctx.restore();
+  }
+
+  function rectsOverlap(a, b) {
+    return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+  }
+
+  function gameUpdateHearts() {
+    const f = '❤️'.repeat(Math.max(0,gameHearts));
+    const e = '🖤'.repeat(Math.max(0,5-gameHearts));
+    const el = document.getElementById('hudHearts');
+    if (el) el.textContent = f + e;
+  }
+
+  function addGameParticle(x,y,text,color) {
+    gameParticles.push({x,y,text,color,alpha:1,vy:-1.5,life:80});
+  }
+
+  const gameCanvas = document.getElementById('gameCanvas');
+  const gameCtx = gameCanvas ? gameCanvas.getContext('2d') : null;
+
+  function gameLoop() {
+    if (!gameRunning || !gameCtx) return;
+    gameCtx.clearRect(0,0,GAME_W,GAME_H);
+    gameDrawBg(gameCtx);
+
+    const p = gamePlayer;
+    p.crouching = gameKeys['ShiftLeft'] || gameKeys['ShiftRight'];
+    if (!p.crouching) {
+      if (gameKeys['KeyA']) p.x -= 5;
+      if (gameKeys['KeyD']) p.x += 5;
+    }
+    p.x = Math.max(0, Math.min(GAME_W - p.w, p.x));
+    p.vy += GRAVITY;
+    p.y += p.vy;
+    if (p.y >= GROUND_Y - p.h) { p.y = GROUND_Y - p.h; p.vy = 0; p.onGround = true; p.jumpCount = 0; }
+    else { p.onGround = false; }
+
+    gameDrawPlayer(gameCtx, p);
+
+    const hb = p.crouching
+      ? { x: p.x+4, y: p.y+p.h*0.4, w: p.w-8, h: p.h*0.6 }
+      : { x: p.x+4, y: p.y+4, w: p.w-8, h: p.h-8 };
+
+    gameScoreTimer++;
+    if (gameScoreTimer >= 3) { gameScore += 55; gameScoreTimer = 0; }
+
+    gameSpawnTimer++;
+    if (gameSpawnTimer >= 42) { gameSpawnItem(); gameSpawnTimer = 0; }
+
+    for (let i = gameItems.length-1; i >= 0; i--) {
+      const item = gameItems[i];
+      item.y += item.vy;
+      item.rot += item.rotSpeed;
+      gameDrawItem(gameCtx, item);
+      const ib = { x: item.x - item.size/2, y: item.y - item.size/2, w: item.size, h: item.size };
+      if (rectsOverlap(ib, hb)) {
+        gameItems.splice(i, 1);
+        if (item.type === 'diamond') { gameScore += 10000; addGameParticle(item.x, item.y-20, '+10,000!', '#5de0f5'); }
+        else if (item.type === 'emerald') { gameScore += 30000; addGameParticle(item.x, item.y-20, '+30,000!', '#2ecc71'); }
+        else if (item.type === 'gold') { gameScore += 5000; addGameParticle(item.x, item.y-20, '+5,000!', '#f5c518'); }
+        else if (item.type === 'heart') { gameHearts = Math.min(5, gameHearts+1); gameUpdateHearts(); addGameParticle(item.x, item.y-20, '+1❤️', '#e74c3c'); }
+        else if (item.type === 'arrow') { gameHearts--; gameUpdateHearts(); addGameParticle(item.x, item.y-20, '-1❤️', '#e74c3c'); }
+        else if (item.type === 'tnt') { gameScore = Math.floor(gameScore/2); addGameParticle(item.x, item.y-20, '💥 /2!', '#e74c3c'); }
+      } else if (item.y > GAME_H + 30) { gameItems.splice(i, 1); }
+    }
+
+    for (let i = gameParticles.length-1; i >= 0; i--) {
+      const pt = gameParticles[i];
+      gameCtx.save();
+      gameCtx.globalAlpha = pt.alpha;
+      gameCtx.fillStyle = pt.color;
+      gameCtx.font = 'bold 13px monospace';
+      gameCtx.textAlign = 'center';
+      gameCtx.fillText(pt.text, pt.x, pt.y);
+      gameCtx.restore();
+      pt.y += pt.vy;
+      pt.alpha -= 1/pt.life;
+      if (pt.alpha <= 0) gameParticles.splice(i,1);
+    }
+
+    const scoreEl = document.getElementById('hudScore');
+    if (scoreEl) scoreEl.textContent = 'SCORE: ' + gameScore.toLocaleString();
+
+    if (gameHearts <= 0 && !gameOver) {
+      gameOver = true;
+      gameRunning = false;
+      const name = discordUser ? (discordUser.global_name || discordUser.username) : '익명';
+      gameSaveRank(name, gameScore);
+      const overlay = document.getElementById('gameOverlay');
+      overlay.style.display = 'flex';
+      overlay.innerHTML = `
+        <div style="font-family:'Press Start 2P',monospace;font-size:18px;color:#e74c3c;">GAME OVER</div>
+        <div style="font-size:14px;color:#f5c518;font-family:'Press Start 2P',monospace;">점수: ${gameScore.toLocaleString()}</div>
+        <div style="background:rgba(0,0,0,0.5);border:2px solid #f5c518;border-radius:8px;padding:12px 24px;min-width:220px;">
+          <div style="color:#f5c518;font-family:'Press Start 2P',monospace;font-size:10px;margin-bottom:8px;text-align:center;">🏆 TOP 3</div>
+          <div id="rankListEnd"></div>
+        </div>
+        <button onclick="gameStart()" style="background:#2d8a2d;border:3px solid #1a5c1a;color:#fff;font-family:'Press Start 2P',monospace;font-size:11px;padding:12px 28px;cursor:pointer;border-radius:4px;">다시 시작</button>
+      `;
+      gameUpdateRank();
+      document.getElementById('gameHUD').style.display = 'none';
+      return;
+    }
+
+    gameAnimFrame = requestAnimationFrame(gameLoop);
+  }
+
+  window.gameStart = function() {
+    gameScore = 0; gameHearts = 3; gameItems = []; gameParticles = [];
+    gameScoreTimer = 0; gameSpawnTimer = 0; gameOver = false;
+    gamePlayer = { x: GAME_W/2-18, y: GROUND_Y-58, w: 36, h: 54, vy: 0, onGround: false, jumpCount: 0, crouching: false };
+    gameUpdateHearts();
+    document.getElementById('gameOverlay').style.display = 'none';
+    document.getElementById('gameHUD').style.display = 'flex';
+    gameRunning = true;
+    if (gameAnimFrame) cancelAnimationFrame(gameAnimFrame);
+    gameLoop();
+  };
+
+  const startBtn = document.getElementById('startBtn');
+  if (startBtn) startBtn.addEventListener('click', gameStart);
+
+  const discordUserGame = JSON.parse(localStorage.getItem('discord_user') || 'null');
+  const gameLoginInfo = document.getElementById('gameLoginInfo');
+  if (gameLoginInfo) {
+    gameLoginInfo.textContent = discordUserGame
+      ? (discordUserGame.global_name || discordUserGame.username) + ' 의 스킨으로 플레이!'
+      : '디스코드 연동 시 본인 스킨으로 플레이!';
+  }
+  if (discordUserGame) {
+    gameSkinImg = new Image();
+    gameSkinImg.crossOrigin = 'anonymous';
+    gameSkinImg.src = 'https://mc-heads.net/avatar/' + discordUserGame.username + '/64';
+  }
+
+  document.addEventListener('keydown', e => {
+    gameKeys[e.code] = true;
+    if (e.code === 'Space' && gameRunning) {
+      e.preventDefault();
+      if (gamePlayer && gamePlayer.jumpCount < 2) {
+        gamePlayer.vy = JUMP_FORCE;
+        gamePlayer.jumpCount++;
+      }
+    }
+    if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && gameRunning) e.preventDefault();
+    if ((e.code === 'KeyA' || e.code === 'KeyD') && gameRunning) e.preventDefault();
+  });
+  document.addEventListener('keyup', e => { gameKeys[e.code] = false; });
 </script>
 
 </body>
