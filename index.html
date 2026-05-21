@@ -1097,6 +1097,17 @@
     gameScore = 0; gameHearts = 3; gameItems = []; gameParticles = [];
     gameScoreTimer = 0; gameSpawnTimer = 0; gameOver = false;
     gamePlayer = { x: GAME_W/2-18, y: GROUND_Y-58, w: 36, h: 54, vy: 0, onGround: false, jumpCount: 0, crouching: false };
+
+    if (discordUserGame) {
+      const member = allMembers.find(m => m.discord === discordUserGame.tag);
+      const mcNick = member ? member.mcNick : null;
+      if (mcNick) {
+        gameSkinImg = new Image();
+        gameSkinImg.crossOrigin = 'anonymous';
+        gameSkinImg.src = 'https://mc-heads.net/avatar/' + mcNick + '/64';
+      }
+    }
+
     gameUpdateHearts();
     document.getElementById('gameOverlay').style.display = 'none';
     document.getElementById('gameHUD').style.display = 'flex';
@@ -1118,7 +1129,13 @@
   if (discordUserGame) {
     gameSkinImg = new Image();
     gameSkinImg.crossOrigin = 'anonymous';
-    gameSkinImg.src = 'https://mc-heads.net/avatar/' + discordUserGame.username + '/64';
+    const member = allMembers.find(m => m.discord === discordUserGame.tag);
+    const mcNick = member ? member.mcNick : null;
+    if (mcNick) {
+      gameSkinImg.src = 'https://mc-heads.net/avatar/' + mcNick + '/64';
+    } else {
+      gameSkinImg.src = 'https://mc-heads.net/avatar/steve/64';
+    }
   }
 
   document.addEventListener('keydown', e => {
