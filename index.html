@@ -990,43 +990,43 @@
       const rx = bodyW/2;
 
       ctx.save();
-      ctx.translate(lx + limbW/2, limbY);
+      ctx.translate(lx + limbW/2, bodyY + bodyH*0.1);
       ctx.rotate(-swing);
-      drawPart(40, 16, 4, 12, -limbW/2, 0, limbW, armH);
+      drawPart(44, 16, 4, 12, -limbW/2, 0, limbW, armH);
       ctx.restore();
 
       ctx.save();
-      ctx.translate(rx + limbW/2, limbY);
+      ctx.translate(rx + limbW/2, bodyY + bodyH*0.1);
       ctx.rotate(swing);
-      drawPart(32, 48, 4, 12, -limbW/2, 0, limbW, armH);
+      drawPart(36, 48, 4, 12, -limbW/2, 0, limbW, armH);
       ctx.restore();
 
       ctx.save();
-      ctx.translate(-limbW/2, limbY);
+      ctx.translate(-limbW/2 - 1, limbY);
       ctx.rotate(swing);
-      drawPart(0, 16, 4, 12, -limbW/2, 0, limbW, legH);
+      drawPart(4, 16, 4, 12, -limbW/2, 0, limbW, legH);
       ctx.restore();
 
       ctx.save();
-      ctx.translate(limbW/2, limbY);
+      ctx.translate(limbW/2 + 1, limbY);
       ctx.rotate(-swing);
-      drawPart(16, 48, 4, 12, -limbW/2, 0, limbW, legH);
+      drawPart(20, 48, 4, 12, -limbW/2, 0, limbW, legH);
       ctx.restore();
 
-      drawPart(16, 16, 8, 12, -bodyW/2, bodyY, bodyW, bodyH);
+      drawPart(20, 20, 8, 12, -bodyW/2, bodyY, bodyW, bodyH);
 
       if (cr) {
         ctx.save();
         ctx.translate(0, headY + headH/2);
         ctx.rotate(0.3);
-        drawPart(0, 0, 8, 8, -headW/2, -headH/2, headW, headH);
-        drawPart(32, 0, 8, 8, -headW/2, -headH/2, headW, headH);
+        drawPart(8, 8, 8, 8, -headW/2, -headH/2, headW, headH);
+        drawPart(40, 8, 8, 8, -headW/2, -headH/2, headW, headH);
         ctx.restore();
       } else {
-        drawPart(0, 0, 8, 8, -headW/2, headY, headW, headH);
-        drawPart(32, 0, 8, 8, -headW/2, headY, headW, headH);
+        drawPart(8, 8, 8, 8, -headW/2, headY, headW, headH);
+        drawPart(40, 8, 8, 8, -headW/2, headY, headW, headH);
       }
-
+      
     } else {
       ctx.fillStyle = '#f5c07a';
       ctx.fillRect(-headW/2, headY, headW, headH);
