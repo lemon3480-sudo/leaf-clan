@@ -1211,7 +1211,7 @@
     if (gameHearts <= 0 && !gameOver) {
       gameOver = true;
       gameRunning = false;
-      const name = discordUser ? (discordUser.global_name || discordUser.username) : '익명';
+      const name = discordUserGame ? (discordUserGame.global_name || discordUserGame.username) : '익명';
       gameSaveRank(name, gameScore);
       const overlay = document.getElementById('gameOverlay');
       overlay.style.display = 'flex';
@@ -1261,11 +1261,11 @@
       ? (discordUserGame.global_name || discordUserGame.username) + ' 의 스킨으로 플레이!'
       : '디스코드 연동 시 본인 스킨으로 플레이!';
   }
-  if (discordUserGame && !skinCanvas) {
-      const member = allMembers.find(m => m.discord === discordUserGame.tag);
-      const mcNick = member ? member.mcNick : null;
-      if (mcNick) await loadSkinTexture(mcNick);
-    }
+  if (discordUserGame) {
+    const member = allMembers.find(m => m.discord === discordUserGame.tag);
+    const mcNick = member ? member.mcNick : null;
+    if (mcNick) loadSkinTexture(mcNick);
+  }
 
   document.addEventListener('keydown', e => {
     gameKeys[e.code] = true;
