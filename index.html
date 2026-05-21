@@ -381,9 +381,9 @@
 </div>
 
     <div id="page-game" class="page">
-    <div style="display:flex;flex-direction:column;align-items:center;padding:20px;">
-      <div style="position:relative;width:700px;max-width:100%;">
-        <canvas id="gameCanvas" width="700" height="500" style="border:2px solid rgba(57,255,20,0.3);border-radius:12px;background:#87CEEB;display:block;width:100%;"></canvas>
+    <div style="display:flex;flex-direction:column;align-items:center;padding:8px 16px;">
+      <div style="position:relative;width:100%;max-width:1200px;">
+        <canvas id="gameCanvas" width="1200" height="650" style="border:2px solid rgba(57,255,20,0.3);border-radius:12px;background:#87CEEB;display:block;width:100%;"></canvas>
         <div id="gameOverlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.85);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px;color:#fff;">
           <div style="font-family:'Press Start 2P',monospace;font-size:20px;color:#39ff14;">LEAF GAME</div>
           <div id="gameLoginInfo" style="font-size:12px;color:#aaa;text-align:center;"></div>
@@ -861,7 +861,7 @@
   }
 
   // ===== MINI GAME =====
-  const GAME_W = 700, GAME_H = 500;
+  const GAME_W = 1200, GAME_H = 650;
   const GROUND_Y = GAME_H - 80;
   const GRAVITY = 0.55;
   const JUMP_FORCE = -13;
