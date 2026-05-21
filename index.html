@@ -950,31 +950,42 @@
 
   function gameDrawPlayer(ctx, p) {
     const cx = p.x + p.w/2;
-    const by = p.y + p.h;
     const cr = p.crouching;
-    const headSize = 22;
-    const bodyH = cr ? 16 : 24;
-    const legH = cr ? 10 : 16;
-    const headY = by - legH - bodyH - headSize + (cr ? 8 : 0);
+    const drawH = cr ? p.h * 0.75 : p.h;
+    const drawW = p.w;
+    const drawX = cx - drawW/2;
+    const drawY = p.y + p.h - drawH;
 
-    ctx.fillStyle = '#3a7d44';
-    ctx.fillRect(cx-10, by-legH, 9, legH);
-    ctx.fillRect(cx+1, by-legH, 9, legH);
-    ctx.fillStyle = '#2e5e99';
-    ctx.fillRect(cx-12, headY+headSize, 24, bodyH);
-    ctx.fillStyle = '#f5c07a';
-    ctx.fillRect(cx-11, headY, headSize, headSize);
     if (gameSkinImg && gameSkinImg.complete && gameSkinImg.naturalWidth > 0) {
-      ctx.drawImage(gameSkinImg, cx-11, headY, headSize, headSize);
+      ctx.save();
+      if (cr) {
+        ctx.translate(cx, drawY + drawH/2);
+        ctx.scale(1, 0.75);
+        ctx.drawImage(gameSkinImg, -drawW/2, -drawH/2, drawW, drawH / 0.75);
+      } else {
+        ctx.drawImage(gameSkinImg, drawX, drawY, drawW, drawH);
+      }
+      ctx.restore();
     } else {
+      const headSize = 22;
+      const bodyH = cr ? 16 : 24;
+      const legH = cr ? 10 : 16;
+      const headY = drawY;
+      ctx.fillStyle = '#3a7d44';
+      ctx.fillRect(cx-10, drawY+drawH-legH, 9, legH);
+      ctx.fillRect(cx+1, drawY+drawH-legH, 9, legH);
+      ctx.fillStyle = '#2e5e99';
+      ctx.fillRect(cx-12, headY+headSize, 24, bodyH);
+      ctx.fillStyle = '#f5c07a';
+      ctx.fillRect(cx-11, headY, headSize, headSize);
       ctx.fillStyle = '#8B4513';
       ctx.fillRect(cx-9, headY+7, 4, 4);
       ctx.fillRect(cx+5, headY+7, 4, 4);
       ctx.fillRect(cx-5, headY+14, 10, 3);
+      ctx.fillStyle = '#f5c07a';
+      ctx.fillRect(cx-17, headY+headSize+2, 6, cr?10:18);
+      ctx.fillRect(cx+11, headY+headSize+2, 6, cr?10:18);
     }
-    ctx.fillStyle = '#f5c07a';
-    ctx.fillRect(cx-17, headY+headSize+2, 6, cr?10:18);
-    ctx.fillRect(cx+11, headY+headSize+2, 6, cr?10:18);
   }
 
   function gameDrawItem(ctx, item) {
@@ -1104,7 +1115,7 @@
       if (mcNick) {
         gameSkinImg = new Image();
         gameSkinImg.crossOrigin = 'anonymous';
-        gameSkinImg.src = 'https://mc-heads.net/avatar/' + mcNick + '/64';
+        gameSkinImg.src = 'https://visage.surgeplay.com/full/128/' + mcNick;
       }
     }
 
