@@ -950,123 +950,172 @@
 
   let playerDir = 1;
   let playerAnimTick = 0;
+  let skinTexture = null;
+  let skinCanvas = null;
+
+  function loadSkinTexture(mcNick) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        skinCanvas = document.createElement('canvas');
+        skinCanvas.width = img.naturalWidth;
+        skinCanvas.height = img.naturalHeight;
+        const sc = skinCanvas.getContext('2d');
+        sc.drawImage(img, 0, 0);
+        skinTexture = sc;
+        resolve();
+      };
+      img.onerror = () => { skinTexture = null; resolve(); };
+      img.src = 'https://worker-production-cff5.up.railway.app/skin/' + mcNick;
+    });
+  }
+
+  function drawSkinPart(ctx, sx, sy, sw, sh, dx, dy, dw, dh) {
+    if (!skinTexture || !skinCanvas) return;
+    const scale = skinCanvas.width / 64;
+    ctx.drawImage(skinCanvas.canvas || skinCanvas.canvas,
+      sx * scale, sy * scale, sw * scale, sh * scale,
+      dx, dy, dw, dh);
+  }
+
+  function drawSkinPartFromCanvas(ctx, sx, sy, sw, sh, dx, dy, dw, dh) {
+    if (!skinCanvas) return false;
+    try {
+      ctx.drawImage(skinCanvas.canvas,
+        Math.round(sx * (skinCanvas.canvas.width / 64)),
+        Math.round(sy * (skinCanvas.canvas.height / 64)),
+        Math.round(sw * (skinCanvas.canvas.width / 64)),
+        Math.round(sh * (skinCanvas.canvas.height / 64)),
+        dx, dy, dw, dh);
+      return true;
+    } catch(e) { return false; }
+  }
 
   function gameDrawPlayer(ctx, p) {
     const cx = p.x + p.w/2;
     const cr = p.crouching;
     const by = p.y + p.h;
 
-    if (gameKeys['KeyA']) { playerDir = -1; if (p.onGround) playerAnimTick += 0.18; }
-    else if (gameKeys['KeyD']) { playerDir = 1; if (p.onGround) playerAnimTick += 0.18; }
-    else { playerAnimTick = 0; }
+    if (gameKeys['KeyA']) { playerDir = -1; if (p.onGround) playerAnimTick += 0.2; }
+    else if (gameKeys['KeyD']) { playerDir = 1; if (p.onGround) playerAnimTick += 0.2; }
+    else { playerAnimTick *= 0.85; }
 
-    const swing = p.onGround ? Math.sin(playerAnimTick) * 0.4 : 0;
+    const swing = Math.sin(playerAnimTick) * 0.45;
 
-    const headW = p.w * 0.7;
-    const headH = p.w * 0.7;
-    const bodyW = p.w * 0.55;
-    const bodyH = cr ? p.h * 0.2 : p.h * 0.3;
-    const limbW = p.w * 0.22;
-    const armH = cr ? p.h * 0.18 : p.h * 0.28;
-    const legH = cr ? p.h * 0.12 : p.h * 0.25;
-    const headY = cr ? by - headH * 0.7 - bodyH - legH + 8 : by - headH - bodyH - legH;
-    const bodyY = headY + headH;
-    const limbY = bodyY + bodyH;
+    const S = p.w;
+    const headS = S * 0.68;
+    const bodyW = S * 0.5;
+    const bodyH = cr ? S * 0.22 : S * 0.35;
+    const limbW = S * 0.22;
+    const armH  = cr ? S * 0.2  : S * 0.32;
+    const legH  = cr ? S * 0.15 : S * 0.28;
+
+    const totalH = headS + bodyH + legH;
+    const headY  = cr ? by - totalH * 0.85 : by - totalH;
+    const bodyY  = headY + headS;
+    const limbY  = bodyY + bodyH;
+
+    const hasSkin = !!skinCanvas;
+
+    const drawPart = (sx, sy, sw2, sh2, dx, dy, dw, dh) => {
+      if (!hasSkin) return false;
+      try {
+        const scale = skinCanvas.canvas.width / 64;
+        ctx.drawImage(skinCanvas.canvas,
+          Math.round(sx * scale), Math.round(sy * scale),
+          Math.round(sw2 * scale), Math.round(sh2 * scale),
+          dx, dy, dw, dh);
+        return true;
+      } catch(e) { return false; }
+    };
 
     ctx.save();
     ctx.translate(cx, 0);
     if (playerDir === -1) ctx.scale(-1, 1);
 
-    if (gameSkinImg && gameSkinImg.complete && gameSkinImg.naturalWidth > 0) {
-      const s = gameSkinImg;
-      const sw = s.naturalWidth, sh = s.naturalHeight;
-      const scale = sw / 64;
+    ctx.imageSmoothingEnabled = false;
 
-      const drawPart = (sx, sy, sw2, sh2, dx, dy, dw, dh) => {
-        ctx.drawImage(s, sx*scale, sy*scale, sw2*scale, sh2*scale, dx, dy, dw, dh);
-      };
+    // 뒷 팔 (오른팔)
+    ctx.save();
+    ctx.translate(-bodyW/2 - limbW/2, bodyY + 2);
+    ctx.rotate(-swing);
+    if (!drawPart(44, 20, 4, 12, -limbW/2, 0, limbW, armH)) {
+      ctx.fillStyle = '#f5a623';
+      ctx.fillRect(-limbW/2, 0, limbW, armH);
+    }
+    ctx.restore();
 
-      const lx = -bodyW/2 - limbW;
-      const rx = bodyW/2;
+    // 뒷 다리 (오른쪽)
+    ctx.save();
+    ctx.translate(-limbW/2 - 1, limbY);
+    ctx.rotate(-swing);
+    if (!drawPart(4, 20, 4, 12, -limbW/2, 0, limbW, legH)) {
+      ctx.fillStyle = '#2d6b38';
+      ctx.fillRect(-limbW/2, 0, limbW, legH);
+    }
+    ctx.restore();
 
-      ctx.save();
-      ctx.translate(lx + limbW/2, bodyY + bodyH*0.1);
-      ctx.rotate(-swing);
-      drawPart(44, 16, 4, 12, -limbW/2, 0, limbW, armH);
-      ctx.restore();
-
-      ctx.save();
-      ctx.translate(rx + limbW/2, bodyY + bodyH*0.1);
-      ctx.rotate(swing);
-      drawPart(36, 48, 4, 12, -limbW/2, 0, limbW, armH);
-      ctx.restore();
-
-      ctx.save();
-      ctx.translate(-limbW/2 - 1, limbY);
-      ctx.rotate(swing);
-      drawPart(4, 16, 4, 12, -limbW/2, 0, limbW, legH);
-      ctx.restore();
-
-      ctx.save();
-      ctx.translate(limbW/2 + 1, limbY);
-      ctx.rotate(-swing);
-      drawPart(20, 48, 4, 12, -limbW/2, 0, limbW, legH);
-      ctx.restore();
-
-      drawPart(20, 20, 8, 12, -bodyW/2, bodyY, bodyW, bodyH);
-
-      if (cr) {
-        ctx.save();
-        ctx.translate(0, headY + headH/2);
-        ctx.rotate(0.3);
-        drawPart(8, 8, 8, 8, -headW/2, -headH/2, headW, headH);
-        drawPart(40, 8, 8, 8, -headW/2, -headH/2, headW, headH);
-        ctx.restore();
-      } else {
-        drawPart(8, 8, 8, 8, -headW/2, headY, headW, headH);
-        drawPart(40, 8, 8, 8, -headW/2, headY, headW, headH);
-      }
-      
-    } else {
-      ctx.fillStyle = '#f5c07a';
-      ctx.fillRect(-headW/2, headY, headW, headH);
+    // 몸통
+    ctx.save();
+    if (!drawPart(20, 20, 8, 12, -bodyW/2, bodyY, bodyW, bodyH)) {
       ctx.fillStyle = '#2e5e99';
       ctx.fillRect(-bodyW/2, bodyY, bodyW, bodyH);
-      ctx.fillStyle = '#3a7d44';
-
-      ctx.save();
-      ctx.translate(-bodyW/2 - limbW/2, limbY);
-      ctx.rotate(-swing);
-      ctx.fillRect(-limbW/2, 0, limbW, legH);
-      ctx.restore();
-
-      ctx.save();
-      ctx.translate(bodyW/2 + limbW/2, limbY);
-      ctx.rotate(swing);
-      ctx.fillRect(-limbW/2, 0, limbW, legH);
-      ctx.restore();
-
-      ctx.fillStyle = '#f5c07a';
-      ctx.save();
-      ctx.translate(-bodyW/2 - limbW/2, bodyY + bodyH*0.1);
-      ctx.rotate(-swing);
-      ctx.fillRect(-limbW/2, 0, limbW, armH);
-      ctx.restore();
-
-      ctx.save();
-      ctx.translate(bodyW/2 + limbW/2, bodyY + bodyH*0.1);
-      ctx.rotate(swing);
-      ctx.fillRect(-limbW/2, 0, limbW, armH);
-      ctx.restore();
-
-      ctx.fillStyle = '#555';
-      ctx.fillRect(-3, headY+headH*0.35, 5, 5);
-      ctx.fillRect(headW*0.1, headY+headH*0.35, 5, 5);
     }
+    // 몸통 레이어2
+    drawPart(20, 36, 8, 12, -bodyW/2, bodyY, bodyW, bodyH);
+    ctx.restore();
+
+    // 앞 다리 (왼쪽)
+    ctx.save();
+    ctx.translate(limbW/2 + 1, limbY);
+    ctx.rotate(swing);
+    if (!drawPart(20, 52, 4, 12, -limbW/2, 0, limbW, legH)) {
+      ctx.fillStyle = '#3a7d44';
+      ctx.fillRect(-limbW/2, 0, limbW, legH);
+    }
+    // 다리 레이어2
+    drawPart(4, 36, 4, 12, -limbW/2, 0, limbW, legH);
+    ctx.restore();
+
+    // 앞 팔 (왼팔)
+    ctx.save();
+    ctx.translate(bodyW/2 + limbW/2, bodyY + 2);
+    ctx.rotate(swing);
+    if (!drawPart(36, 52, 4, 12, -limbW/2, 0, limbW, armH)) {
+      ctx.fillStyle = '#d4891e';
+      ctx.fillRect(-limbW/2, 0, limbW, armH);
+    }
+    // 팔 레이어2
+    drawPart(52, 52, 4, 12, -limbW/2, 0, limbW, armH);
+    ctx.restore();
+
+    // 머리
+    ctx.save();
+    if (cr) {
+      ctx.translate(0, headY + headS * 0.5);
+      ctx.rotate(0.25);
+      if (!drawPart(8, 8, 8, 8, -headS/2, -headS/2, headS, headS)) {
+        ctx.fillStyle = '#f5c07a';
+        ctx.fillRect(-headS/2, -headS/2, headS, headS);
+      }
+      drawPart(40, 8, 8, 8, -headS/2, -headS/2, headS, headS);
+    } else {
+      if (!drawPart(8, 8, 8, 8, -headS/2, headY, headS, headS)) {
+        ctx.fillStyle = '#f5c07a';
+        ctx.fillRect(-headS/2, headY, headS, headS);
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(-headS*0.2, headY + headS*0.35, headS*0.18, headS*0.18);
+        ctx.fillRect(headS*0.05, headY + headS*0.35, headS*0.18, headS*0.18);
+        ctx.fillRect(-headS*0.15, headY + headS*0.6, headS*0.5, headS*0.1);
+      }
+      drawPart(40, 8, 8, 8, -headS/2, headY, headS, headS);
+    }
+    ctx.restore();
 
     ctx.restore();
   }
-
+  
   function gameDrawItem(ctx, item) {
     ctx.save();
     ctx.translate(item.x, item.y);
@@ -1183,20 +1232,16 @@
     gameAnimFrame = requestAnimationFrame(gameLoop);
   }
 
-  window.gameStart = function() {
+  window.gameStart = async function() {
     gameScore = 0; gameHearts = 3; gameItems = []; gameParticles = [];
     gameScoreTimer = 0; gameSpawnTimer = 0; gameOver = false;
     gamePlayer = { x: GAME_W/2-18, y: GROUND_Y-58, w: 36, h: 54, vy: 0, onGround: false, jumpCount: 0, crouching: false };
 
     if (discordUserGame) {
-      const member = allMembers.find(m => m.discord === discordUserGame.tag);
-      const mcNick = member ? member.mcNick : null;
-      if (mcNick) {
-        gameSkinImg = new Image();
-        gameSkinImg.crossOrigin = 'anonymous';
-        gameSkinImg.src = 'https://visage.surgeplay.com/full/128/' + mcNick;
-      }
-    }
+    const member = allMembers.find(m => m.discord === discordUserGame.tag);
+    const mcNick = member ? member.mcNick : null;
+    if (mcNick) loadSkinTexture(mcNick);
+  }
 
     gameUpdateHearts();
     document.getElementById('gameOverlay').style.display = 'none';
@@ -1216,17 +1261,11 @@
       ? (discordUserGame.global_name || discordUserGame.username) + ' 의 스킨으로 플레이!'
       : '디스코드 연동 시 본인 스킨으로 플레이!';
   }
-  if (discordUserGame) {
-    gameSkinImg = new Image();
-    gameSkinImg.crossOrigin = 'anonymous';
-    const member = allMembers.find(m => m.discord === discordUserGame.tag);
-    const mcNick = member ? member.mcNick : null;
-    if (mcNick) {
-      gameSkinImg.src = 'https://mc-heads.net/avatar/' + mcNick + '/64';
-    } else {
-      gameSkinImg.src = 'https://mc-heads.net/avatar/steve/64';
+  if (discordUserGame && !skinCanvas) {
+      const member = allMembers.find(m => m.discord === discordUserGame.tag);
+      const mcNick = member ? member.mcNick : null;
+      if (mcNick) await loadSkinTexture(mcNick);
     }
-  }
 
   document.addEventListener('keydown', e => {
     gameKeys[e.code] = true;
