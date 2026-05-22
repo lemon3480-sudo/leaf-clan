@@ -978,7 +978,7 @@
 
    if (gameKeys['KeyA']) { playerDir = 1; if (p.onGround) playerAnimTick += 0.2; }
     else if (gameKeys['KeyD']) { playerDir = -1; if (p.onGround) playerAnimTick += 0.2; }
-    else { playerAnimTick *= 0.85; }
+    else { playerAnimTick = 0; }
 
     const swing = Math.sin(playerAnimTick) * 0.45;
 
