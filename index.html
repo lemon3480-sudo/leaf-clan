@@ -452,35 +452,35 @@
         </div>
         <div id="gameHUD" style="display:none;position:absolute;inset:0;z-index:10;pointer-events:none;">
 
-          <div style="position:absolute;top:14px;left:16px;background:rgba(0,0,0,0.55);border:1px solid rgba(57,255,20,0.25);border-radius:12px;padding:12px 18px;min-width:200px;">
-            <div style="font-size:10px;color:rgba(57,255,20,0.6);font-weight:700;letter-spacing:2px;margin-bottom:4px;">SCORE</div>
-            <div id="hudScore" style="font-family:'Press Start 2P',monospace;font-size:20px;color:#fff;letter-spacing:1px;">0</div>
-            <div id="hudCombo" style="margin-top:6px;font-family:'Press Start 2P',monospace;font-size:11px;color:#39ff14;display:none;" class="combo-pulse">COMBO: 1X</div>
+          <div style="position:absolute;top:20px;left:20px;background:rgba(0,0,0,0.6);border:1px solid rgba(57,255,20,0.3);border-radius:14px;padding:16px 24px;min-width:260px;">
+            <div style="font-size:13px;color:rgba(57,255,20,0.7);font-weight:700;letter-spacing:2px;margin-bottom:6px;">SCORE</div>
+            <div id="hudScore" style="font-family:'Press Start 2P',monospace;font-size:28px;color:#fff;letter-spacing:1px;">0</div>
+            <div id="hudCombo" style="margin-top:8px;font-family:'Press Start 2P',monospace;font-size:14px;color:#39ff14;display:none;" class="combo-pulse">COMBO: 1X</div>
           </div>
 
-          <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:6px 16px;display:flex;align-items:center;gap:8px;">
-            <div style="width:7px;height:7px;background:#39ff14;border-radius:50%;box-shadow:0 0 6px #39ff14;animation:comboPulse 2s infinite;flex-shrink:0;"></div>
-            <div id="hudUserInfo" style="font-size:11px;color:rgba(255,255,255,0.5);">디스코드 미연동</div>
+          <div style="position:absolute;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:8px 22px;display:flex;align-items:center;gap:10px;">
+            <div style="width:9px;height:9px;background:#39ff14;border-radius:50%;box-shadow:0 0 8px #39ff14;animation:comboPulse 2s infinite;flex-shrink:0;"></div>
+            <div id="hudUserInfo" style="font-size:13px;color:rgba(255,255,255,0.55);">디스코드 미연동</div>
           </div>
 
-          <div style="position:absolute;top:14px;right:16px;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 16px;">
-            <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px;margin-bottom:6px;text-align:center;">HEALTH</div>
-            <div id="hudHearts" style="font-size:22px;letter-spacing:4px;display:flex;gap:4px;align-items:center;">❤️❤️❤️</div>
+          <div style="position:absolute;top:20px;right:20px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:14px 22px;">
+            <div style="font-size:12px;color:rgba(255,255,255,0.45);letter-spacing:1px;margin-bottom:8px;text-align:center;">HEALTH</div>
+            <div id="hudHearts" style="font-size:30px;letter-spacing:6px;display:flex;gap:6px;align-items:center;">❤️❤️❤️</div>
           </div>
 
-          <div style="position:absolute;top:90px;right:16px;background:rgba(0,0,0,0.55);border:1px solid rgba(57,255,20,0.2);border-radius:12px;padding:12px 16px;min-width:180px;">
-            <div style="font-size:9px;color:rgba(57,255,20,0.7);font-weight:700;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+          <div style="position:absolute;top:120px;right:20px;background:rgba(0,0,0,0.6);border:1px solid rgba(57,255,20,0.25);border-radius:14px;padding:16px 20px;min-width:220px;">
+            <div style="font-size:12px;color:rgba(57,255,20,0.8);font-weight:700;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
               <span>🏆</span> LEADERBOARD
             </div>
             <div id="hudRankList"></div>
           </div>
 
-          <div style="position:absolute;bottom:16px;left:16px;display:flex;gap:6px;align-items:center;">
-            <div id="keyA" class="key-cap">A</div>
-            <div id="keyD" class="key-cap">D</div>
-            <div id="keySpace" class="key-cap" style="min-width:64px;">SPACE</div>
-            <div id="keyShift" class="key-cap">SHIFT</div>
-            <div id="keyCtrl" class="key-cap">CTRL</div>
+          <div style="position:absolute;bottom:20px;left:20px;display:flex;gap:8px;align-items:center;">
+            <div id="keyA" class="key-cap" style="font-size:14px;padding:8px 14px;min-width:44px;">A</div>
+            <div id="keyD" class="key-cap" style="font-size:14px;padding:8px 14px;min-width:44px;">D</div>
+            <div id="keySpace" class="key-cap" style="font-size:14px;padding:8px 14px;min-width:80px;">SPACE</div>
+            <div id="keyShift" class="key-cap" style="font-size:14px;padding:8px 14px;min-width:60px;">SHIFT</div>
+            <div id="keyCtrl" class="key-cap" style="font-size:14px;padding:8px 14px;min-width:52px;">CTRL</div>
           </div>
 
         </div>
@@ -1004,8 +1004,8 @@
     const hudRank = document.getElementById('hudRankList');
     if (hudRank) {
       hudRank.innerHTML = top10.length === 0
-        ? '<div style="font-size:8px;color:#888;font-family:monospace;">기록 없음</div>'
-        : top10.map((r,i) => `<div style="display:flex;justify-content:space-between;gap:12px;font-size:8px;color:${i===0?'#f5c518':i===1?'#aaa':i===2?'#cd7f32':'#ddd'};font-family:monospace;padding:2px 0;border-bottom:1px solid #333;">${i+1}. ${r.name}<span>${r.score.toLocaleString()}</span></div>`).join('');
+        ? '<div style="font-size:12px;color:#888;font-family:monospace;">기록 없음</div>'
+        : top10.map((r,i) => `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;color:${i===0?'#f5c518':i===1?'#ccc':i===2?'#cd7f32':'rgba(255,255,255,0.6)'};font-family:'Noto Sans KR',sans-serif;">${i+1}. ${r.name}<span style="color:#39ff14;font-weight:700;">${r.score.toLocaleString()}</span></div>`).join('');
     }
   }
   gameUpdateRank();
@@ -1268,10 +1268,9 @@
 
     gameDrawPlayer(gameCtx, p);
 
-    const unit = p.w / 8;
     const hb = p.crouching
-      ? { x: p.x + unit*2, y: p.y + p.h*0.35, w: unit*4, h: p.h*0.65 }
-      : { x: p.x + unit*2, y: p.y + unit*2, w: unit*4, h: p.h - unit*2 };
+      ? { x: p.x, y: p.y + p.h*0.3, w: p.w, h: p.h*0.7 }
+      : { x: p.x, y: p.y, w: p.w, h: p.h };
 
     gameScoreTimer++;
     if (gameScoreTimer >= 3) { gameScore += 55; gameScoreTimer = 0; }
@@ -1292,12 +1291,12 @@
       const ib = { x: item.x - item.size/2, y: item.y - item.size/2, w: item.size, h: item.size };
       if (rectsOverlap(ib, hb)) {
         gameItems.splice(i, 1);
-        if (item.type === 'diamond') { gameScore += 10000; updateCombo(true); showFloatText(item.x, item.y, '+10,000', '#5de0f5'); addGameParticle(item.x, item.y-20, '+10,000!', '#5de0f5'); }
-        else if (item.type === 'emerald') { gameScore += 30000; updateCombo(true); showFloatText(item.x, item.y, '+30,000', '#2ecc71'); addGameParticle(item.x, item.y-20, '+30,000!', '#2ecc71'); }
-        else if (item.type === 'gold') { gameScore += 5000; updateCombo(true); showFloatText(item.x, item.y, '+5,000', '#f5c518'); addGameParticle(item.x, item.y-20, '+5,000!', '#f5c518'); }
-        else if (item.type === 'heart') { gameHearts = Math.min(5, gameHearts+1); gameUpdateHearts(); showFloatText(item.x, item.y, '+1❤️', '#e74c3c'); addGameParticle(item.x, item.y-20, '+1❤️', '#e74c3c'); }
-        else if (item.type === 'arrow') { gameHearts--; gameUpdateHearts(); updateCombo(false); showFloatText(item.x, item.y, '-1❤️', '#e74c3c'); addGameParticle(item.x, item.y-20, '-1❤️', '#e74c3c'); }
-        else if (item.type === 'tnt') { gameScore = Math.floor(gameScore/2); updateCombo(false); showFloatText(item.x, item.y, '💥 /2!', '#e74c3c'); addGameParticle(item.x, item.y-20, '💥 /2!', '#e74c3c'); }
+        if (item.type === 'diamond') { gameScore += 10000; updateCombo(true); showFloatText(item.x, item.y, '+10,000', '#5de0f5'); }
+        else if (item.type === 'emerald') { gameScore += 30000; updateCombo(true); showFloatText(item.x, item.y, '+30,000', '#2ecc71'); }
+        else if (item.type === 'gold') { gameScore += 5000; updateCombo(true); showFloatText(item.x, item.y, '+5,000', '#f5c518'); }
+        else if (item.type === 'heart') { gameHearts = Math.min(5, gameHearts+1); gameUpdateHearts(); showFloatText(item.x, item.y, '+1❤️', '#e74c3c'); }
+        else if (item.type === 'arrow') { gameHearts--; gameUpdateHearts(); updateCombo(false); showFloatText(item.x, item.y, '-1❤️', '#e74c3c'); }
+        else if (item.type === 'tnt') { gameScore = Math.floor(gameScore/2); updateCombo(false); showFloatText(item.x, item.y, '💥 /2!', '#e74c3c'); }
       } else if (item.y > GAME_H + 30) { gameItems.splice(i, 1); }
     }
 
