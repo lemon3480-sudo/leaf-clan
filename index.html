@@ -794,6 +794,11 @@
       const joinDate = member && member.joinedAt ? formatDate(member.joinedAt) : '-';
       const card = document.createElement('div');
       card.className = 'intro-card';
+      const safeText = (v.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const safeTextJs = (v.text || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
+      const safeNick = (v.mcNick || '').replace(/'/g,"\\'");
+      const safeDiscord = (v.discord || '').replace(/'/g,"\\'");
+      card.onclick = () => openIntroModal(v.id, v.mcNick, v.discord, badgeClass, badgeText, v.text || '');
       card.innerHTML =
         '<div class="intro-card-top">'
         + '<div class="intro-skin"><img src="' + faceUrl(v.mcNick) + '" alt="' + v.mcNick + '" onerror="this.src=\'https://visage.surgeplay.com/face/64/steve\'"></div>'
@@ -802,9 +807,10 @@
         + '<span class="intro-badge ' + badgeClass + '">' + badgeText + '</span><br>'
         + '<span class="intro-discord">🎮 ' + (v.discord || '') + '</span>'
         + '</div></div>'
-        + '<div class="intro-text">' + (v.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
+        + '<div class="intro-text">' + safeText + '</div>'
         + '<div class="intro-card-footer">'
         + '<span class="intro-stat"> ' + joinDate + '</span>'
+        + '<span class="intro-stat" style="color:rgba(57,255,20,0.4);">💬 클릭하여 전체보기</span>'
         + '</div>';
       grid.appendChild(card);
     });
@@ -1007,6 +1013,89 @@
     if (!e || e.target === document.getElementById('modal')) {
       document.getElementById('modal').classList.remove('active');
     }
+  }
+
+  let currentIntroId = null;
+  let introCommentMode = 'anon';
+
+  window.setIntroCommentMode = function(mode) {
+    introCommentMode = mode;
+    document.getElementById('introModal-btnAnon').classList.toggle('active', mode === 'anon');
+    document.getElementById('introModal-btnReal').classList.toggle('active', mode === 'real');
+  }
+
+  window.openIntroModal = function(introId, mcNick, discord, badgeClass, badgeText, text) {
+    currentIntroId = introId;
+    document.getElementById('introModal-face').src = faceUrl(mcNick);
+    document.getElementById('introModal-nick').textContent = mcNick;
+    document.getElementById('introModal-badge').textContent = badgeText;
+    document.getElementById('introModal-badge').className = 'modal-rank ' + badgeClass.replace('badge-', 'r-');
+    document.getElementById('introModal-discord').textContent = '🎮 ' + (discord || '');
+    document.getElementById('introModal-text').textContent = text;
+
+    const discordUser = JSON.parse(localStorage.getItem('discord_user') || 'null');
+    document.getElementById('introModal-loginNotice').style.display = discordUser ? 'block' : 'none';
+    document.getElementById('introModal-needLogin').style.display = discordUser ? 'none' : 'block';
+
+    document.getElementById('introModal').classList.add('active');
+    loadIntroComments(introId);
+  }
+
+  window.closeIntroModal = function(e) {
+    if (!e || e.target === document.getElementById('introModal')) {
+      document.getElementById('introModal').classList.remove('active');
+      currentIntroId = null;
+    }
+  }
+
+  let introCommentUnsubscribe = null;
+
+  function loadIntroComments(introId) {
+    const clist = document.getElementById('introModal-clist');
+    clist.innerHTML = '';
+    if (introCommentUnsubscribe) { introCommentUnsubscribe(); introCommentUnsubscribe = null; }
+    introCommentUnsubscribe = onSnapshot(
+      query(collection(db, 'intros', introId, 'comments'), orderBy('createdAt', 'asc')),
+      snap => {
+        clist.innerHTML = '';
+        if (snap.empty) {
+          clist.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.25);text-align:center;padding:16px 0;">아직 댓글이 없어요</div>';
+          return;
+        }
+        snap.forEach(d => {
+          const c = d.data();
+          const avatarHtml = c.avatar
+            ? '<div class="comment-avatar"><img src="' + c.avatar + '" alt=""></div>'
+            : '<div class="comment-avatar">?</div>';
+          clist.innerHTML += '<div class="comment-item">'
+            + avatarHtml
+            + '<div class="comment-body">'
+            + '<span class="comment-nick-text">' + (c.nick||'익명').replace(/</g,'&lt;') + '</span>'
+            + '<span class="comment-text">' + (c.text||'').replace(/</g,'&lt;') + '</span>'
+            + '<div class="comment-date">' + formatDate(c.createdAt) + '</div>'
+            + '</div></div>';
+        });
+      }
+    );
+  }
+
+  window.submitIntroComment = async function() {
+    if (!currentIntroId) return;
+    const discordUser = JSON.parse(localStorage.getItem('discord_user') || 'null');
+    if (!discordUser) return;
+    const text = document.getElementById('introModal-cinput').value.trim();
+    if (!text) return;
+    const isAnon = introCommentMode === 'anon';
+    const nick = isAnon ? '익명' : (discordUser.global_name || discordUser.username);
+    const avatar = isAnon ? null : discordUser.avatar;
+    await addDoc(collection(db, 'intros', currentIntroId, 'comments'), {
+      nick, text, avatar,
+      realNick: discordUser.global_name || discordUser.username,
+      discordId: discordUser.id,
+      isAnon,
+      createdAt: serverTimestamp()
+    });
+    document.getElementById('introModal-cinput').value = '';
   }
 
   // ===== MINI GAME =====
@@ -1819,5 +1908,48 @@ overlay.innerHTML = `
   document.addEventListener('keyup', e => { gameKeys[e.code] = false; });
 </script>
 
+  <div class="modal-overlay" id="introModal" onclick="closeIntroModal(event)">
+  <div class="modal" style="width:640px;max-height:85vh;overflow-y:auto;">
+    <button class="close-btn" onclick="closeIntroModal()">x</button>
+    <div class="modal-head" style="flex-direction:column;align-items:flex-start;gap:14px;">
+      <div style="display:flex;align-items:center;gap:16px;width:100%;">
+        <div class="intro-skin" style="width:72px;height:72px;flex-shrink:0;">
+          <img id="introModal-face" src="" alt="" style="width:100%;height:100%;object-fit:cover;image-rendering:pixelated;">
+        </div>
+        <div>
+          <div class="modal-name" id="introModal-nick"></div>
+          <span class="modal-rank" id="introModal-badge"></span>
+          <div class="modal-discord" id="introModal-discord"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div id="introModal-text" style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.9;margin-bottom:24px;white-space:pre-wrap;word-break:break-word;"></div>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin-bottom:20px;">
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;color:rgba(57,255,20,0.7);font-weight:700;letter-spacing:1px;margin-bottom:12px;">💬 댓글</div>
+
+        <div id="introModal-commentInput">
+          <div id="introModal-loginNotice" style="display:none;">
+            <div class="comment-nick-toggle" id="introModal-nickToggle">
+              <button class="comment-nick-btn active" id="introModal-btnAnon" onclick="setIntroCommentMode('anon')">🎭 익명</button>
+              <button class="comment-nick-btn" id="introModal-btnReal" onclick="setIntroCommentMode('real')">🎮 내 아이디</button>
+            </div>
+            <div class="comment-input-row">
+              <input class="comment-input" id="introModal-cinput" placeholder="댓글을 입력하세요...">
+              <button class="comment-submit" onclick="submitIntroComment()">등록</button>
+            </div>
+          </div>
+          <div id="introModal-needLogin" style="font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:12px;">
+            💬 댓글을 달려면 디스코드 로그인이 필요해요
+          </div>
+        </div>
+
+        <div id="introModal-clist"></div>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
