@@ -1118,13 +1118,28 @@
     gameUpdateRank();
   }
 
+  const ITEM_IMGS = {};
+  const ITEM_IMG_SRCS = {
+    diamond: 'https://lemon3480-sudo.github.io/leaf-clan/images/diamond.png',
+    emerald: 'https://lemon3480-sudo.github.io/leaf-clan/images/emerald.png',
+    gold:    'https://lemon3480-sudo.github.io/leaf-clan/images/gold_ingot.png',
+    heart:   'https://lemon3480-sudo.github.io/leaf-clan/images/heart.png',
+    arrow:   'https://lemon3480-sudo.github.io/leaf-clan/images/arrow.png',
+    tnt:     'https://lemon3480-sudo.github.io/leaf-clan/images/tnt.png',
+  };
+  Object.entries(ITEM_IMG_SRCS).forEach(([key, src]) => {
+    const img = new Image();
+    img.src = src;
+    ITEM_IMGS[key] = img;
+  });
+
   const ITEM_TYPES = [
-    { type:'diamond', emoji:'💎', score:10000, hp:0, size:22, chance:8 },
-    { type:'emerald', emoji:'💚', score:30000, hp:0, size:22, chance:4 },
-    { type:'gold',    emoji:'🟡', score:5000,  hp:0, size:22, chance:12 },
-    { type:'heart',   emoji:'❤️', score:0,     hp:1, size:20, chance:8 },
-    { type:'arrow',   emoji:'🏹', score:0,    hp:-1, size:22, chance:15 },
-    { type:'tnt',     emoji:'💣', score:-1,    hp:0, size:24, chance:6 },
+    { type:'diamond', emoji:'💎', score:10000, hp:0, size:40, chance:8 },
+    { type:'emerald', emoji:'💚', score:30000, hp:0, size:40, chance:4 },
+    { type:'gold',    emoji:'🟡', score:5000,  hp:0, size:40, chance:12 },
+    { type:'heart',   emoji:'❤️', score:0,     hp:1, size:36, chance:8 },
+    { type:'arrow',   emoji:'🏹', score:0,    hp:-1, size:40, chance:15 },
+    { type:'tnt',     emoji:'💣', score:-1,    hp:0, size:44, chance:6 },
   ];
 
   function gameSpawnItem() {
@@ -1322,10 +1337,16 @@
     ctx.save();
     ctx.translate(item.x, item.y);
     ctx.rotate(item.rot);
-    ctx.font = item.size + 'px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(item.emoji, 0, 0);
+    ctx.imageSmoothingEnabled = false;
+    const img = ITEM_IMGS[item.type];
+    if (img && img.complete && img.naturalWidth > 0) {
+      ctx.drawImage(img, -item.size/2, -item.size/2, item.size, item.size);
+    } else {
+      ctx.font = item.size + 'px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(item.emoji, 0, 0);
+    }
     ctx.restore();
   }
 
