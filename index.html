@@ -1542,15 +1542,73 @@ function rectsOverlap(a,b) {
       gameSaveRank(name, gameScore);
       const overlay = document.getElementById('gameOverlay');
       overlay.style.display = 'flex';
-      overlay.innerHTML = `
-        <div style="font-family:'Press Start 2P',monospace;font-size:18px;color:#e74c3c;">GAME OVER</div>
-        <div style="font-size:14px;color:#f5c518;font-family:'Press Start 2P',monospace;">점수: ${gameScore.toLocaleString()}</div>
-        <div style="background:rgba(0,0,0,0.5);border:2px solid #f5c518;border-radius:8px;padding:12px 24px;min-width:220px;">
-          <div style="color:#f5c518;font-family:'Press Start 2P',monospace;font-size:10px;margin-bottom:8px;text-align:center;">🏆 TOP 3</div>
-          <div id="rankListEnd"></div>
-        </div>
-        <button onclick="gameStart()" style="background:#2d8a2d;border:3px solid #1a5c1a;color:#fff;font-family:'Press Start 2P',monospace;font-size:11px;padding:12px 28px;cursor:pointer;border-radius:4px;">다시 시작</button>
-      `;
+overlay.style.alignItems = 'center';
+overlay.style.justifyContent = 'center';
+overlay.style.flexDirection = 'column';
+overlay.style.gap = '0';
+overlay.style.background = 'rgba(0,0,0,0.72)';
+
+overlay.innerHTML = `
+  <div style="
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+    background:rgba(5,12,7,0.78);
+    border:2px solid rgba(57,255,20,0.45);
+    border-radius:18px;
+    padding:34px 42px;
+    min-width:340px;
+    box-shadow:0 0 35px rgba(57,255,20,0.18), 0 8px 40px rgba(0,0,0,0.55);
+  ">
+    <div style="
+      font-family:'Press Start 2P',monospace;
+      font-size:26px;
+      color:#e74c3c;
+      text-shadow:0 0 12px rgba(231,76,60,0.75);
+      letter-spacing:2px;
+      text-align:center;
+    ">GAME OVER</div>
+
+    <div style="
+      font-family:'Press Start 2P',monospace;
+      font-size:14px;
+      color:#f5c518;
+      text-align:center;
+    ">점수: ${gameScore.toLocaleString()}</div>
+
+    <div style="
+      width:100%;
+      background:rgba(0,0,0,0.5);
+      border:2px solid #f5c518;
+      border-radius:10px;
+      padding:14px 18px;
+      min-width:250px;
+    ">
+      <div style="
+        color:#f5c518;
+        font-family:'Press Start 2P',monospace;
+        font-size:11px;
+        margin-bottom:12px;
+        text-align:center;
+      ">🏆 TOP 3</div>
+      <div id="rankListEnd"></div>
+    </div>
+
+    <button onclick="gameStart()" style="
+      background:#2d8a2d;
+      border:3px solid #1a5c1a;
+      color:#fff;
+      font-family:'Press Start 2P',monospace;
+      font-size:12px;
+      padding:13px 34px;
+      cursor:pointer;
+      border-radius:6px;
+      box-shadow:0 0 16px rgba(57,255,20,0.28);
+    ">다시 시작</button>
+  </div>
+`;
       gameUpdateRank();
       document.getElementById('gameHUD').style.display = 'none';
       gameUpdateRank();
