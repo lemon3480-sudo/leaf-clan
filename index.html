@@ -581,7 +581,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, orderBy, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, orderBy, doc, updateDoc, increment, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCmoMAQQ21iq424Y9205wiBb2LIijpN2lY",
@@ -1088,13 +1088,31 @@
     const isAnon = introCommentMode === 'anon';
     const nick = isAnon ? '익명' : (discordUser.global_name || discordUser.username);
     const avatar = isAnon ? null : discordUser.avatar;
+
+    const introRef = await getDoc(doc(db, 'intros', currentIntroId));
+    const threadId = introRef.exists() ? introRef.data().threadId : null;
+
     await addDoc(collection(db, 'intros', currentIntroId, 'comments'), {
       nick, text, avatar,
       realNick: discordUser.global_name || discordUser.username,
       discordId: discordUser.id,
       isAnon,
+      fromDiscord: false,
       createdAt: serverTimestamp()
     });
+
+    if (threadId) {
+      try {
+        await fetch('https://worker-production-cff5.up.railway.app/intro-comment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ threadId, nick, text, isAnon })
+        });
+      } catch (e) {
+        console.warn('디스코드 전송 실패:', e);
+      }
+    }
+
     document.getElementById('introModal-cinput').value = '';
   }
 
