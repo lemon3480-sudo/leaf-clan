@@ -1346,8 +1346,45 @@
 
 let gameExplosions = [];
 
+  function createMinecraftExplosionPieces(x, y) {
+    const pieces = [];
+    const colors = [
+      '#ffffff', '#f2f2f2', '#c9c9c9',
+      '#5f5f5f', '#3a3a3a', '#1f1f1f',
+      '#ffdd66', '#ff9f1a', '#e25822'
+    ];
+
+    for (let i = 0; i < 42; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 7;
+      const size = 5 + Math.random() * 11;
+
+      pieces.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - Math.random() * 2,
+        size,
+        rot: Math.random() * Math.PI,
+        rotSpeed: (Math.random() - 0.5) * 0.25,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: 1,
+        life: 28 + Math.random() * 18
+      });
+    }
+
+    return pieces;
+  }
+
   function triggerExplosion(x, y, fromDirect) {
-    gameExplosions.push({ x, y, r: 0, maxR: 80, alpha: 1, fromDirect });
+    gameExplosions.push({
+      x,
+      y,
+      frame: 0,
+      alpha: 1,
+      fromDirect,
+      pieces: createMinecraftExplosionPieces(x, y)
+    });
     const hb = gamePlayer ? getPlayerHitbox(gamePlayer) : null;
     if (!hb) return;
     const dist = Math.sqrt((x - (hb.x + hb.w/2))**2 + (y - (hb.y + hb.h/2))**2);
@@ -1367,21 +1404,82 @@ let gameExplosions = [];
   function drawExplosions(ctx) {
     for (let i = gameExplosions.length - 1; i >= 0; i--) {
       const e = gameExplosions[i];
+      e.frame++;
+
       ctx.save();
-      ctx.globalAlpha = e.alpha;
-      const grad = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.r);
-      grad.addColorStop(0, 'rgba(255,255,200,0.9)');
-      grad.addColorStop(0.3, 'rgba(255,150,0,0.7)');
-      grad.addColorStop(0.7, 'rgba(255,50,0,0.4)');
-      grad.addColorStop(1, 'rgba(255,0,0,0)');
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
-      ctx.fill();
+      ctx.imageSmoothingEnabled = false;
+
+      // 1. 마인크래프트 TNT 폭발처럼 순간적으로 번쩍이는 흰 섬광
+      if (e.frame < 6) {
+        ctx.globalAlpha = (1 - e.frame / 6) * 0.85;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(e.x - 46, e.y - 46, 92, 92);
+        ctx.fillRect(e.x - 70, e.y - 22, 140, 44);
+        ctx.fillRect(e.x - 22, e.y - 70, 44, 140);
+      }
+
+      // 2. 픽셀식 불꽃 중심부
+      const fireAlpha = Math.max(0, 1 - e.frame / 18);
+      if (fireAlpha > 0) {
+        ctx.globalAlpha = fireAlpha;
+        const fireBlocks = [
+          { x:-34, y:-18, w:28, h:28, c:'#ffdd55' },
+          { x:-8,  y:-38, w:32, h:32, c:'#ffffff' },
+          { x:18,  y:-16, w:30, h:30, c:'#ff9f1a' },
+          { x:-18, y:12,  w:34, h:34, c:'#e25822' },
+          { x:22,  y:18,  w:24, h:24, c:'#ffdd55' },
+          { x:-46, y:8,   w:22, h:22, c:'#ff9f1a' }
+        ];
+
+        for (const b of fireBlocks) {
+          ctx.fillStyle = b.c;
+          ctx.fillRect(e.x + b.x, e.y + b.y, b.w, b.h);
+        }
+      }
+
+      // 3. 회색/검정 연기 픽셀 구름
+      const smokeAlpha = Math.max(0, 1 - e.frame / 42);
+      ctx.globalAlpha = smokeAlpha * 0.9;
+
+      const smokeSize = e.frame * 2.2;
+      const smokeBlocks = [
+        { x:-28-smokeSize*0.5, y:-28-smokeSize*0.2, s:36+smokeSize, c:'#5c5c5c' },
+        { x:18+smokeSize*0.2,  y:-34-smokeSize*0.4, s:42+smokeSize, c:'#3f3f3f' },
+        { x:-54-smokeSize*0.3, y:10+smokeSize*0.1,  s:34+smokeSize, c:'#2f2f2f' },
+        { x:22+smokeSize*0.4,  y:18+smokeSize*0.2,  s:38+smokeSize, c:'#6a6a6a' },
+        { x:-10,               y:-4-smokeSize*0.5,  s:46+smokeSize, c:'#4b4b4b' }
+      ];
+
+      for (const b of smokeBlocks) {
+        ctx.fillStyle = b.c;
+        ctx.fillRect(e.x + b.x, e.y + b.y, b.s, b.s);
+      }
+
+      // 4. 사방으로 튀는 작은 픽셀 파편
+      for (const p of e.pieces) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.18;
+        p.rot += p.rotSpeed;
+        p.alpha -= 1 / p.life;
+
+        if (p.alpha <= 0) continue;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        ctx.restore();
+      }
+
       ctx.restore();
-      e.r += 4;
-      e.alpha -= 0.05;
-      if (e.alpha <= 0) gameExplosions.splice(i, 1);
+
+      e.alpha -= 0.025;
+      if (e.alpha <= 0 || e.frame > 50) {
+        gameExplosions.splice(i, 1);
+      }
     }
   }
   
