@@ -1348,11 +1348,7 @@ let gameExplosions = [];
 
   function triggerExplosion(x, y, fromDirect) {
     gameExplosions.push({ x, y, r: 0, maxR: 80, alpha: 1, fromDirect });
-    const hb = gamePlayer
-      ? (gamePlayer.crouching
-        ? { x: gamePlayer.x, y: gamePlayer.y + gamePlayer.h*0.25, w: gamePlayer.w * 1.25, h: gamePlayer.h*0.75 }
-        : { x: gamePlayer.x - gamePlayer.w*0.125, y: gamePlayer.y, w: gamePlayer.w * 1.25, h: gamePlayer.h })
-      : null;
+    const hb = gamePlayer ? getPlayerHitbox(gamePlayer) : null;
     if (!hb) return;
     const dist = Math.sqrt((x - (hb.x + hb.w/2))**2 + (y - (hb.y + hb.h/2))**2);
     if (dist < 100) {
@@ -1406,7 +1402,31 @@ let gameExplosions = [];
     ctx.restore();
   }
 
-  function rectsOverlap(a, b) {
+  function getPlayerHitbox(p) {
+  const unit = p.w / 8;
+
+  const headS = unit * 8;
+  const bodyW = unit * 8;
+  const bodyH = p.crouching ? unit * 5 : unit * 10;
+  const limbW = unit * 4;
+  const legH = p.crouching ? unit * 5 : unit * 11;
+
+  const totalH = headS + bodyH + legH;
+  const visualW = bodyW + limbW * 2;
+
+  const bottomY = p.y + p.h;
+  const visualX = p.x + p.w / 2 - visualW / 2;
+  const visualY = bottomY - totalH;
+
+  return {
+    x: visualX,
+    y: visualY,
+    w: visualW,
+    h: totalH
+  };
+}
+
+function rectsOverlap(a,b) {
     return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
   }
 
@@ -1446,12 +1466,7 @@ let gameExplosions = [];
     gameDrawPlayer(gameCtx, p);
     drawExplosions(gameCtx);
 
-    const unit = p.w / 8;
-    const hbW = unit * 10;
-    const hbX = p.x + p.w/2 - hbW/2;
-    const hb = p.crouching
-      ? { x: hbX, y: p.y + p.h*0.25, w: hbW, h: p.h*0.75 }
-      : { x: hbX, y: p.y, w: hbW, h: p.h };
+    const hb = getPlayerHitbox(p);
 
     gameScoreTimer++;
     if (gameScoreTimer >= 3) { gameScore += 55; gameScoreTimer = 0; }
