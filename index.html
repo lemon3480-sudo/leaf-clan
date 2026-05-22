@@ -226,6 +226,13 @@
     .sidebar-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; }
     .sidebar-label { color: rgba(255,255,255,0.4); }
     .sidebar-val { color: #eee; font-weight: 600; }
+
+    @keyframes comboPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.05)} }
+    @keyframes floatUp { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-80px)} }
+    .combo-pulse { animation: comboPulse 1s infinite; }
+    .float-text { animation: floatUp 1.2s ease-out forwards; position:absolute; pointer-events:none; font-weight:700; font-size:18px; z-index:99; }
+    .key-cap { display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-bottom:3px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);font-family:'Noto Sans KR',sans-serif;transition:all 0.1s;min-width:36px;text-align:center; }
+    .key-cap.active { background:rgba(57,255,20,0.2);border-color:rgba(57,255,20,0.5);border-bottom-color:rgba(57,255,20,0.3);color:#39ff14;box-shadow:0 0 8px rgba(57,255,20,0.3); }
   </style>
 </head>
 <body>
@@ -443,17 +450,39 @@
             <button id="startBtn" style="background:#39ff14;border:none;color:#050f05;font-family:'Press Start 2P',monospace;font-size:15px;padding:16px 56px;cursor:pointer;border-radius:8px;letter-spacing:2px;font-weight:700;box-shadow:0 0 20px rgba(57,255,20,0.4);transition:all 0.2s;" onmouseover="this.style.boxShadow='0 0 40px rgba(57,255,20,0.8)';this.style.background='#5fff35';" onmouseout="this.style.boxShadow='0 0 20px rgba(57,255,20,0.4)';this.style.background='#39ff14';">게임 시작</button>
           </div>
         </div>
-        <div id="gameHUD" style="display:none;position:absolute;top:10px;left:0;right:0;z-index:10;pointer-events:none;display:none;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:0 20px;">
-            <div style="background:rgba(0,0,0,0.7);border:2px solid #555;border-radius:6px;padding:8px 16px;color:#fff;font-family:'Press Start 2P',monospace;font-size:13px;text-align:center;">
-              <div id="hudHearts" style="font-size:18px;margin-bottom:4px;">❤️❤️❤️</div>
-              <div id="hudScore">SCORE: 0</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.7);border:2px solid #f5c518;border-radius:6px;padding:10px 16px;min-width:200px;">
-              <div style="color:#f5c518;font-family:'Press Start 2P',monospace;font-size:9px;margin-bottom:8px;text-align:center;">🏆 RANKING</div>
-              <div id="hudRankList"></div>
-            </div>
+        <div id="gameHUD" style="display:none;position:absolute;inset:0;z-index:10;pointer-events:none;">
+
+          <div style="position:absolute;top:14px;left:16px;background:rgba(0,0,0,0.55);border:1px solid rgba(57,255,20,0.25);border-radius:12px;padding:12px 18px;min-width:200px;">
+            <div style="font-size:10px;color:rgba(57,255,20,0.6);font-weight:700;letter-spacing:2px;margin-bottom:4px;">SCORE</div>
+            <div id="hudScore" style="font-family:'Press Start 2P',monospace;font-size:20px;color:#fff;letter-spacing:1px;">0</div>
+            <div id="hudCombo" style="margin-top:6px;font-family:'Press Start 2P',monospace;font-size:11px;color:#39ff14;display:none;" class="combo-pulse">COMBO: 1X</div>
           </div>
+
+          <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:6px 16px;display:flex;align-items:center;gap:8px;">
+            <div style="width:7px;height:7px;background:#39ff14;border-radius:50%;box-shadow:0 0 6px #39ff14;animation:comboPulse 2s infinite;flex-shrink:0;"></div>
+            <div id="hudUserInfo" style="font-size:11px;color:rgba(255,255,255,0.5);">디스코드 미연동</div>
+          </div>
+
+          <div style="position:absolute;top:14px;right:16px;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 16px;">
+            <div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px;margin-bottom:6px;text-align:center;">HEALTH</div>
+            <div id="hudHearts" style="font-size:22px;letter-spacing:4px;display:flex;gap:4px;align-items:center;">❤️❤️❤️</div>
+          </div>
+
+          <div style="position:absolute;top:90px;right:16px;background:rgba(0,0,0,0.55);border:1px solid rgba(57,255,20,0.2);border-radius:12px;padding:12px 16px;min-width:180px;">
+            <div style="font-size:9px;color:rgba(57,255,20,0.7);font-weight:700;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+              <span>🏆</span> LEADERBOARD
+            </div>
+            <div id="hudRankList"></div>
+          </div>
+
+          <div style="position:absolute;bottom:16px;left:16px;display:flex;gap:6px;align-items:center;">
+            <div id="keyA" class="key-cap">A</div>
+            <div id="keyD" class="key-cap">D</div>
+            <div id="keySpace" class="key-cap" style="min-width:64px;">SPACE</div>
+            <div id="keyShift" class="key-cap">SHIFT</div>
+            <div id="keyCtrl" class="key-cap">CTRL</div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -925,6 +954,41 @@
   let gameSkinImg = null;
   let gameRankings = JSON.parse(localStorage.getItem('leafGameRank') || '[]');
   let gameAnimFrame = null;
+  let gameCombo = 0;
+  let gameComboTimer = 0;
+
+  function showFloatText(x, y, text, color) {
+    const el = document.createElement('div');
+    el.className = 'float-text';
+    el.textContent = text;
+    el.style.color = color;
+    const canvas = document.getElementById('gameCanvas');
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = rect.width / 1920;
+    const scaleY = rect.height / 900;
+    el.style.left = (rect.left + x * scaleX) + 'px';
+    el.style.top = (rect.top + y * scaleY) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1200);
+  }
+
+  function updateCombo(add) {
+    if (add) {
+      gameCombo++;
+      gameComboTimer = 120;
+    } else {
+      gameCombo = 0;
+    }
+    const el = document.getElementById('hudCombo');
+    if (el) {
+      if (gameCombo >= 2) {
+        el.style.display = 'block';
+        el.textContent = 'COMBO: ' + gameCombo + 'X';
+      } else {
+        el.style.display = 'none';
+      }
+    }
+  }
 
   function gameUpdateRank() {
     const top3 = gameRankings.slice(0,3);
@@ -1212,6 +1276,11 @@
     gameScoreTimer++;
     if (gameScoreTimer >= 3) { gameScore += 55; gameScoreTimer = 0; }
 
+    if (gameComboTimer > 0) {
+      gameComboTimer--;
+      if (gameComboTimer === 0) updateCombo(false);
+    }
+
     gameSpawnTimer++;
     if (gameSpawnTimer >= 42) { gameSpawnItem(); gameSpawnTimer = 0; }
 
@@ -1223,12 +1292,12 @@
       const ib = { x: item.x - item.size/2, y: item.y - item.size/2, w: item.size, h: item.size };
       if (rectsOverlap(ib, hb)) {
         gameItems.splice(i, 1);
-        if (item.type === 'diamond') { gameScore += 10000; addGameParticle(item.x, item.y-20, '+10,000!', '#5de0f5'); }
-        else if (item.type === 'emerald') { gameScore += 30000; addGameParticle(item.x, item.y-20, '+30,000!', '#2ecc71'); }
-        else if (item.type === 'gold') { gameScore += 5000; addGameParticle(item.x, item.y-20, '+5,000!', '#f5c518'); }
-        else if (item.type === 'heart') { gameHearts = Math.min(5, gameHearts+1); gameUpdateHearts(); addGameParticle(item.x, item.y-20, '+1❤️', '#e74c3c'); }
-        else if (item.type === 'arrow') { gameHearts--; gameUpdateHearts(); addGameParticle(item.x, item.y-20, '-1❤️', '#e74c3c'); }
-        else if (item.type === 'tnt') { gameScore = Math.floor(gameScore/2); addGameParticle(item.x, item.y-20, '💥 /2!', '#e74c3c'); }
+        if (item.type === 'diamond') { gameScore += 10000; updateCombo(true); showFloatText(item.x, item.y, '+10,000', '#5de0f5'); addGameParticle(item.x, item.y-20, '+10,000!', '#5de0f5'); }
+        else if (item.type === 'emerald') { gameScore += 30000; updateCombo(true); showFloatText(item.x, item.y, '+30,000', '#2ecc71'); addGameParticle(item.x, item.y-20, '+30,000!', '#2ecc71'); }
+        else if (item.type === 'gold') { gameScore += 5000; updateCombo(true); showFloatText(item.x, item.y, '+5,000', '#f5c518'); addGameParticle(item.x, item.y-20, '+5,000!', '#f5c518'); }
+        else if (item.type === 'heart') { gameHearts = Math.min(5, gameHearts+1); gameUpdateHearts(); showFloatText(item.x, item.y, '+1❤️', '#e74c3c'); addGameParticle(item.x, item.y-20, '+1❤️', '#e74c3c'); }
+        else if (item.type === 'arrow') { gameHearts--; gameUpdateHearts(); updateCombo(false); showFloatText(item.x, item.y, '-1❤️', '#e74c3c'); addGameParticle(item.x, item.y-20, '-1❤️', '#e74c3c'); }
+        else if (item.type === 'tnt') { gameScore = Math.floor(gameScore/2); updateCombo(false); showFloatText(item.x, item.y, '💥 /2!', '#e74c3c'); addGameParticle(item.x, item.y-20, '💥 /2!', '#e74c3c'); }
       } else if (item.y > GAME_H + 30) { gameItems.splice(i, 1); }
     }
 
@@ -1247,7 +1316,13 @@
     }
 
     const scoreEl = document.getElementById('hudScore');
-    if (scoreEl) scoreEl.textContent = 'SCORE: ' + gameScore.toLocaleString();
+    if (scoreEl) scoreEl.textContent = gameScore.toLocaleString();
+
+    document.getElementById('keyA').classList.toggle('active', !!gameKeys['KeyA']);
+    document.getElementById('keyD').classList.toggle('active', !!gameKeys['KeyD']);
+    document.getElementById('keySpace').classList.toggle('active', !!gameKeys['Space']);
+    document.getElementById('keyShift').classList.toggle('active', !!(gameKeys['ShiftLeft']||gameKeys['ShiftRight']));
+    document.getElementById('keyCtrl').classList.toggle('active', !!(gameKeys['ControlLeft']||gameKeys['ControlRight']));
 
     if (gameHearts <= 0 && !gameOver) {
       gameOver = true;
@@ -1277,6 +1352,12 @@
   window.gameStart = async function() {
     gameScore = 0; gameHearts = 3; gameItems = []; gameParticles = [];
     gameScoreTimer = 0; gameSpawnTimer = 0; gameOver = false;
+    gameCombo = 0; gameComboTimer = 0;
+    const userInfoEl = document.getElementById('hudUserInfo');
+    if (userInfoEl && discordUserGame) {
+      userInfoEl.textContent = (discordUserGame.global_name || discordUserGame.username) + ' · LeafSkin 연동됨';
+    }
+    updateCombo(false);
     gamePlayer = { x: GAME_W/2-18, y: GROUND_Y-58, w: 36, h: 54, vy: 0, onGround: false, jumpCount: 0, crouching: false };
 
     if (discordUserGame) {
