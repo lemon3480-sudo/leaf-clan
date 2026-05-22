@@ -983,12 +983,13 @@
     const swing = Math.sin(playerAnimTick) * 0.45;
 
     const S = p.w;
-    const headS = S * 0.55;
-    const bodyW = S * 0.6;
-    const bodyH = cr ? S * 0.3 : S * 0.55;
-    const limbW = S * 0.28;
-    const armH  = cr ? S * 0.28 : S * 0.52;
-    const legH  = cr ? S * 0.22 : S * 0.45;
+    const unit = S / 8;
+    const headS = unit * 8;
+    const bodyW = unit * 8;
+    const bodyH = cr ? unit * 6 : unit * 12;
+    const limbW = unit * 4;
+    const armH  = cr ? unit * 6 : unit * 12;
+    const legH  = cr ? unit * 4 : unit * 8;
 
     const totalH = headS + bodyH + legH;
     const headY  = cr ? by - totalH * 0.85 : by - totalH;
