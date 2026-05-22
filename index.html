@@ -971,27 +971,6 @@
     });
   }
 
-  function drawSkinPart(ctx, sx, sy, sw, sh, dx, dy, dw, dh) {
-    if (!skinTexture || !skinCanvas) return;
-    const scale = skinCanvas.width / 64;
-    ctx.drawImage(skinCanvas.canvas || skinCanvas.canvas,
-      sx * scale, sy * scale, sw * scale, sh * scale,
-      dx, dy, dw, dh);
-  }
-
-  function drawSkinPartFromCanvas(ctx, sx, sy, sw, sh, dx, dy, dw, dh) {
-    if (!skinCanvas) return false;
-    try {
-      ctx.drawImage(skinCanvas.canvas,
-        Math.round(sx * (skinCanvas.canvas.width / 64)),
-        Math.round(sy * (skinCanvas.canvas.height / 64)),
-        Math.round(sw * (skinCanvas.canvas.width / 64)),
-        Math.round(sh * (skinCanvas.canvas.height / 64)),
-        dx, dy, dw, dh);
-      return true;
-    } catch(e) { return false; }
-  }
-
   function gameDrawPlayer(ctx, p) {
     const cx = p.x + p.w/2;
     const cr = p.crouching;
@@ -1019,10 +998,10 @@
     const hasSkin = !!skinCanvas;
 
     const drawPart = (sx, sy, sw2, sh2, dx, dy, dw, dh) => {
-      if (!hasSkin) return false;
+      if (!hasSkin || !skinCanvas) return false;
       try {
-        const scale = skinCanvas.canvas.width / 64;
-        ctx.drawImage(skinCanvas.canvas,
+        const scale = skinCanvas.width / 64;
+        ctx.drawImage(skinCanvas,
           Math.round(sx * scale), Math.round(sy * scale),
           Math.round(sw2 * scale), Math.round(sh2 * scale),
           dx, dy, dw, dh);
