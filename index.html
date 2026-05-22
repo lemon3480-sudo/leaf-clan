@@ -16,13 +16,59 @@
 
     .content { position: relative; z-index: 1; }
 
-    nav { background: rgba(8,13,10,0.7); border-bottom: 1px solid rgba(57,255,20,0.2); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(12px); }
-    .logo { font-family: 'Press Start 2P', monospace; font-size: 16px; color: #39ff14; text-shadow: 0 0 8px rgba(57,255,20,0.9), 0 0 20px rgba(57,255,20,0.5), 0 0 40px rgba(57,255,20,0.3); letter-spacing: 2px; }
-    .nav-links { display: flex; gap: 32px; }
-    .nav-links a { color: #8aaa90; text-decoration: none; font-size: 16px; font-weight: 600; transition: color 0.2s; cursor: pointer; }
-    .nav-links a:hover { color: #39ff14; }
-    .nav-links a.active { color: #39ff14; border-bottom: 2px solid #39ff14; padding-bottom: 2px; }
-    .nav-right { display: flex; align-items: center; }
+    nav {
+  position: relative;
+  background: rgba(8,13,10,0.7);
+  border-bottom: 1px solid rgba(57,255,20,0.2);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(12px);
+}
+
+.logo {
+  position: absolute;
+  left: 24px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 16px;
+  color: #39ff14;
+  text-shadow: 0 0 8px rgba(57,255,20,0.9), 0 0 20px rgba(57,255,20,0.5), 0 0 40px rgba(57,255,20,0.3);
+  letter-spacing: 2px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-links a {
+  color: #8aaa90;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.nav-links a:hover {
+  color: #39ff14;
+}
+
+.nav-links a.active {
+  color: #39ff14;
+  border-bottom: 2px solid #39ff14;
+  padding-bottom: 2px;
+}
+
+.nav-right {
+  position: absolute;
+  right: 24px;
+  display: flex;
+  align-items: center;
+}
     #login-btn { background: rgba(88,101,242,0.15); border: 1px solid rgba(88,101,242,0.4); border-radius: 8px; padding: 8px 16px; color: #5865f2; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; transition: all 0.2s; }
     #login-btn:hover { background: rgba(88,101,242,0.25); }
     #user-info { display: none; align-items: center; gap: 10px; }
