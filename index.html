@@ -389,7 +389,7 @@
             <div style="font-family:'Press Start 2P',monospace;font-size:36px;color:#39ff14;text-shadow:0 0 20px #39ff14;letter-spacing:4px;">LEAF GAME</div>
             <div id="gameLoginInfo" style="font-size:16px;color:#aaa;text-align:center;"></div>
             <div style="font-size:15px;color:#ccc;text-align:center;line-height:2.5;">
-              A = 왼쪽 &nbsp;&nbsp; D = 오른쪽 &nbsp;&nbsp; SPACE = 점프 &nbsp;&nbsp; SHIFT = 웅크리기<br>
+              A = 왼쪽 &nbsp;&nbsp; D = 오른쪽 &nbsp;&nbsp; SPACE = 점프 &nbsp;&nbsp; SHIFT = 웅크리기 &nbsp;&nbsp; CTRL = 달리기<br>
               💎 +10,000 &nbsp;&nbsp; 💚 +30,000 &nbsp;&nbsp; 🟡 +5,000 &nbsp;&nbsp; ❤️ +체력1 &nbsp;&nbsp; 🏹 -체력1 &nbsp;&nbsp; 💣 점수÷2
             </div>
             <div style="background:rgba(0,0,0,0.6);border:2px solid #f5c518;border-radius:12px;padding:20px 40px;min-width:320px;">
@@ -399,10 +399,16 @@
             <button id="startBtn" style="background:#2d8a2d;border:3px solid #1a5c1a;color:#fff;font-family:'Press Start 2P',monospace;font-size:16px;padding:18px 48px;cursor:pointer;border-radius:6px;letter-spacing:2px;">게임 시작</button>
           </div>
         </div>
-        <div id="gameHUD" style="display:none;position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;">
-          <div style="background:rgba(0,0,0,0.7);border:2px solid #555;border-radius:6px;padding:6px 14px;color:#fff;font-family:'Press Start 2P',monospace;font-size:11px;text-align:center;">
-            <div id="hudHearts" style="font-size:16px;">❤️❤️❤️</div>
-            <div id="hudScore">SCORE: 0</div>
+        <div id="gameHUD" style="display:none;position:absolute;top:10px;left:0;right:0;z-index:10;pointer-events:none;display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:0 20px;">
+            <div style="background:rgba(0,0,0,0.7);border:2px solid #555;border-radius:6px;padding:8px 16px;color:#fff;font-family:'Press Start 2P',monospace;font-size:13px;text-align:center;">
+              <div id="hudHearts" style="font-size:18px;margin-bottom:4px;">❤️❤️❤️</div>
+              <div id="hudScore">SCORE: 0</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.7);border:2px solid #f5c518;border-radius:6px;padding:10px 16px;min-width:200px;">
+              <div style="color:#f5c518;font-family:'Press Start 2P',monospace;font-size:9px;margin-bottom:8px;text-align:center;">🏆 RANKING</div>
+              <div id="hudRankList"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -878,6 +884,7 @@
 
   function gameUpdateRank() {
     const top3 = gameRankings.slice(0,3);
+    const top10 = gameRankings.slice(0,10);
     const medals = ['🥇','🥈','🥉'];
     ['rankListOverlay','rankListEnd'].forEach(id => {
       const el = document.getElementById(id);
@@ -886,6 +893,12 @@
         ? '<div style="font-size:9px;color:#888;font-family:monospace;">아직 기록 없음</div>'
         : top3.map((r,i) => `<div style="display:flex;justify-content:space-between;gap:16px;font-size:9px;color:#ddd;font-family:monospace;padding:3px 0;border-bottom:1px solid #333;">${medals[i]} ${r.name}<span>${r.score.toLocaleString()}</span></div>`).join('');
     });
+    const hudRank = document.getElementById('hudRankList');
+    if (hudRank) {
+      hudRank.innerHTML = top10.length === 0
+        ? '<div style="font-size:8px;color:#888;font-family:monospace;">기록 없음</div>'
+        : top10.map((r,i) => `<div style="display:flex;justify-content:space-between;gap:12px;font-size:8px;color:${i===0?'#f5c518':i===1?'#aaa':i===2?'#cd7f32':'#ddd'};font-family:monospace;padding:2px 0;border-bottom:1px solid #333;">${i+1}. ${r.name}<span>${r.score.toLocaleString()}</span></div>`).join('');
+    }
   }
   gameUpdateRank();
 
@@ -981,7 +994,7 @@
     else if (gameKeys['KeyD']) { playerDir = -1; if (p.onGround) playerAnimTick += 0.2; }
     else { playerAnimTick = 0; }
 
-    const swing = Math.sin(playerAnimTick) * 0.45;
+    const swing = Math.sin(playerAnimTick) * 0.25;
 
     const S = p.w;
     const unit = S / 8;
@@ -1133,10 +1146,12 @@
 
     const p = gamePlayer;
     p.crouching = gameKeys['ShiftLeft'] || gameKeys['ShiftRight'];
-    if (!p.crouching) {
-      if (gameKeys['KeyA']) p.x -= 5;
-      if (gameKeys['KeyD']) p.x += 5;
-    }
+    const isSprinting = gameKeys['ControlLeft'] || gameKeys['ControlRight'];
+    let speed = 5;
+    if (p.crouching) speed *= 0.4;
+    else if (isSprinting) speed *= 1.3;
+    if (gameKeys['KeyA']) p.x -= speed;
+    if (gameKeys['KeyD']) p.x += speed;
     p.x = Math.max(0, Math.min(GAME_W - p.w, p.x));
     p.vy += GRAVITY;
     p.y += p.vy;
@@ -1145,9 +1160,10 @@
 
     gameDrawPlayer(gameCtx, p);
 
+    const unit = p.w / 8;
     const hb = p.crouching
-      ? { x: p.x+4, y: p.y+p.h*0.4, w: p.w-8, h: p.h*0.6 }
-      : { x: p.x+4, y: p.y+4, w: p.w-8, h: p.h-8 };
+      ? { x: p.x + unit*2, y: p.y + p.h*0.35, w: unit*4, h: p.h*0.65 }
+      : { x: p.x + unit*2, y: p.y + unit*2, w: unit*4, h: p.h - unit*2 };
 
     gameScoreTimer++;
     if (gameScoreTimer >= 3) { gameScore += 55; gameScoreTimer = 0; }
@@ -1207,6 +1223,7 @@
       `;
       gameUpdateRank();
       document.getElementById('gameHUD').style.display = 'none';
+      gameUpdateRank();
       return;
     }
 
@@ -1226,7 +1243,7 @@
 
     gameUpdateHearts();
     document.getElementById('gameOverlay').style.display = 'none';
-    document.getElementById('gameHUD').style.display = 'flex';
+    document.getElementById('gameHUD').style.display = 'block';
     gameRunning = true;
     if (gameAnimFrame) cancelAnimationFrame(gameAnimFrame);
     gameLoop();
