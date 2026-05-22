@@ -384,19 +384,20 @@
     <div style="padding:0;margin:0;">
       <div style="position:relative;width:100vw;">
         <canvas id="gameCanvas" width="1920" height="900" style="display:block;width:100vw;height:calc(100vh - 52px);"></canvas>
-        <div id="gameOverlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.85);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px;color:#fff;">
-          <div style="font-family:'Press Start 2P',monospace;font-size:20px;color:#39ff14;">LEAF GAME</div>
-          <div id="gameLoginInfo" style="font-size:12px;color:#aaa;text-align:center;"></div>
-          <div style="font-size:11px;color:#ccc;text-align:center;line-height:2.2;">
-            A = 왼쪽 &nbsp; D = 오른쪽 &nbsp; SPACE = 점프 &nbsp; SHIFT = 웅크리기<br>
-            💎 +10,000 &nbsp; 💚 +30,000 &nbsp; 🟡 +5,000<br>
-            ❤️ +체력1 &nbsp; 🏹 -체력1 &nbsp; 💣 점수÷2
+        <div id="gameOverlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:0 8%;">
+          <div style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;color:#fff;">
+            <div style="font-family:'Press Start 2P',monospace;font-size:36px;color:#39ff14;text-shadow:0 0 20px #39ff14;letter-spacing:4px;">LEAF GAME</div>
+            <div id="gameLoginInfo" style="font-size:16px;color:#aaa;text-align:center;"></div>
+            <div style="font-size:15px;color:#ccc;text-align:center;line-height:2.5;">
+              A = 왼쪽 &nbsp;&nbsp; D = 오른쪽 &nbsp;&nbsp; SPACE = 점프 &nbsp;&nbsp; SHIFT = 웅크리기<br>
+              💎 +10,000 &nbsp;&nbsp; 💚 +30,000 &nbsp;&nbsp; 🟡 +5,000 &nbsp;&nbsp; ❤️ +체력1 &nbsp;&nbsp; 🏹 -체력1 &nbsp;&nbsp; 💣 점수÷2
+            </div>
+            <div style="background:rgba(0,0,0,0.6);border:2px solid #f5c518;border-radius:12px;padding:20px 40px;min-width:320px;">
+              <div style="color:#f5c518;font-family:'Press Start 2P',monospace;font-size:14px;margin-bottom:12px;text-align:center;">🏆 TOP 3</div>
+              <div id="rankListOverlay"></div>
+            </div>
+            <button id="startBtn" style="background:#2d8a2d;border:3px solid #1a5c1a;color:#fff;font-family:'Press Start 2P',monospace;font-size:16px;padding:18px 48px;cursor:pointer;border-radius:6px;letter-spacing:2px;">게임 시작</button>
           </div>
-          <div style="background:rgba(0,0,0,0.5);border:2px solid #f5c518;border-radius:8px;padding:12px 24px;min-width:220px;">
-            <div style="color:#f5c518;font-family:'Press Start 2P',monospace;font-size:10px;margin-bottom:8px;text-align:center;">🏆 TOP 3</div>
-            <div id="rankListOverlay"></div>
-          </div>
-          <button id="startBtn" style="background:#2d8a2d;border:3px solid #1a5c1a;color:#fff;font-family:'Press Start 2P',monospace;font-size:11px;padding:12px 28px;cursor:pointer;border-radius:4px;">게임 시작</button>
         </div>
         <div id="gameHUD" style="display:none;position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:10;pointer-events:none;">
           <div style="background:rgba(0,0,0,0.7);border:2px solid #555;border-radius:6px;padding:6px 14px;color:#fff;font-family:'Press Start 2P',monospace;font-size:11px;text-align:center;">
