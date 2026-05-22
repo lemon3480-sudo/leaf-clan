@@ -1136,24 +1136,27 @@
   const ITEM_TYPES = [
     { type:'diamond', emoji:'💎', score:10000, hp:0, size:40, chance:8 },
     { type:'emerald', emoji:'💚', score:30000, hp:0, size:40, chance:4 },
-    { type:'gold',    emoji:'🟡', score:5000,  hp:0, size:40, chance:12 },
-    { type:'heart',   emoji:'❤️', score:0,     hp:1, size:36, chance:8 },
-    { type:'arrow',   emoji:'🏹', score:0,    hp:-1, size:40, chance:15 },
-    { type:'tnt',     emoji:'💣', score:-1,    hp:0, size:44, chance:6 },
+    { type:'gold',    emoji:'🟡', score:5000,  hp:0, size:40, chance:10 },
+    { type:'heart',   emoji:'❤️', score:0,     hp:1, size:36, chance:6 },
+    { type:'arrow',   emoji:'🏹', score:0,    hp:-1, size:56, chance:30 },
+    { type:'tnt',     emoji:'💣', score:-1,    hp:0, size:44, chance:24 },
   ];
-
   function gameSpawnItem() {
     const total = ITEM_TYPES.reduce((a,b) => a+b.chance, 0);
     let r = Math.random() * total;
     let chosen = ITEM_TYPES[0];
     for (const t of ITEM_TYPES) { r -= t.chance; if (r <= 0) { chosen = t; break; } }
     gameItems.push({
+      const isArrow = chosen.type === 'arrow';
+    const isTnt = chosen.type === 'tnt';
+    gameItems.push({
       ...chosen,
       x: Math.random() * (GAME_W - 40) + 20,
       y: -30,
-      vy: 1.8 + Math.random() * 2.2,
+      vy: isArrow ? 6 + Math.random() * 3 : 2.7 + Math.random() * 3.3,
       rot: 0,
-      rotSpeed: (Math.random() - 0.5) * 0.12,
+      rotSpeed: isArrow ? 0 : (Math.random() - 0.5) * 0.12,
+      exploded: false,
     });
   }
 
@@ -1332,6 +1335,51 @@
 
     ctx.restore();
   }
+
+let gameExplosions = [];
+
+  function triggerExplosion(x, y, fromDirect) {
+    gameExplosions.push({ x, y, r: 0, maxR: 80, alpha: 1, fromDirect });
+    const hb = gamePlayer
+      ? (gamePlayer.crouching
+        ? { x: gamePlayer.x, y: gamePlayer.y + gamePlayer.h*0.25, w: gamePlayer.w * 1.25, h: gamePlayer.h*0.75 }
+        : { x: gamePlayer.x - gamePlayer.w*0.125, y: gamePlayer.y, w: gamePlayer.w * 1.25, h: gamePlayer.h })
+      : null;
+    if (!hb) return;
+    const dist = Math.sqrt((x - (hb.x + hb.w/2))**2 + (y - (hb.y + hb.h/2))**2);
+    if (dist < 100) {
+      if (fromDirect) {
+        gameScore = Math.floor(gameScore / 2);
+        showFloatText(x, y, '💥 직격! /2!', '#e74c3c');
+      } else {
+        gameScore = Math.floor(gameScore * 0.8);
+        showFloatText(x, y, '💥 폭발! -20%', '#ff8c00');
+      }
+      breakCombo();
+      gameUpdateHearts();
+    }
+  }
+
+  function drawExplosions(ctx) {
+    for (let i = gameExplosions.length - 1; i >= 0; i--) {
+      const e = gameExplosions[i];
+      ctx.save();
+      ctx.globalAlpha = e.alpha;
+      const grad = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, e.r);
+      grad.addColorStop(0, 'rgba(255,255,200,0.9)');
+      grad.addColorStop(0.3, 'rgba(255,150,0,0.7)');
+      grad.addColorStop(0.7, 'rgba(255,50,0,0.4)');
+      grad.addColorStop(1, 'rgba(255,0,0,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+      e.r += 4;
+      e.alpha -= 0.05;
+      if (e.alpha <= 0) gameExplosions.splice(i, 1);
+    }
+  }
   
   function gameDrawItem(ctx, item) {
     ctx.save();
@@ -1376,7 +1424,7 @@
     const p = gamePlayer;
     p.crouching = gameKeys['ShiftLeft'] || gameKeys['ShiftRight'];
     const isSprinting = gameKeys['ControlLeft'] || gameKeys['ControlRight'];
-    let speed = 5;
+    let speed = 7.5;
     if (p.crouching) speed *= 0.4;
     else if (isSprinting) speed *= 1.3;
     if (gameKeys['KeyA']) p.x -= speed;
@@ -1388,6 +1436,7 @@
     else { p.onGround = false; }
 
     gameDrawPlayer(gameCtx, p);
+    drawExplosions(gameCtx);
 
     const unit = p.w / 8;
     const hbW = unit * 10;
@@ -1414,7 +1463,7 @@
     updateComboUI();
 
     gameSpawnTimer++;
-    if (gameSpawnTimer >= 42) { gameSpawnItem(); gameSpawnTimer = 0; }
+    if (gameSpawnTimer >= 18) { gameSpawnItem(); gameSpawnTimer = 0; }
 
     for (let i = gameItems.length-1; i >= 0; i--) {
       const item = gameItems[i];
@@ -1430,8 +1479,14 @@
         else if (item.type === 'gold') { const pts=5000*mult; gameScore+=pts; addCombo(); showFloatText(item.x, item.y, '+'+pts.toLocaleString()+(gameFever?'🔥':''), '#f5c518'); }
         else if (item.type === 'heart') { gameHearts=Math.min(5,gameHearts+1); gameUpdateHearts(); addCombo(); showFloatText(item.x, item.y, '+1❤️', '#e74c3c'); }
         else if (item.type === 'arrow') { gameHearts--; gameUpdateHearts(); breakCombo(); showFloatText(item.x, item.y, '-1❤️', '#e74c3c'); }
-        else if (item.type === 'tnt') { gameScore=Math.floor(gameScore/2); breakCombo(); showFloatText(item.x, item.y, '💥 /2!', '#e74c3c'); }
-      } else if (item.y > GAME_H + 30) { gameItems.splice(i, 1); }
+        else if (item.type === 'tnt') { triggerExplosion(item.x, item.y, true); }
+      } else if (item.y > GAME_H + 30) {
+        gameItems.splice(i, 1);
+      } else if (item.type === 'tnt' && !item.exploded && item.y >= GROUND_Y - item.size/2) {
+        item.exploded = true;
+        triggerExplosion(item.x, item.y, false);
+        gameItems.splice(i, 1);
+      }
     }
 
     for (let i = gameParticles.length-1; i >= 0; i--) {
@@ -1483,7 +1538,7 @@
   }
 
   window.gameStart = async function() {
-    gameScore = 0; gameHearts = 3; gameItems = []; gameParticles = [];
+    gameScore = 0; gameHearts = 3; gameItems = []; gameParticles = []; gameExplosions = [];
     gameScoreTimer = 0; gameSpawnTimer = 0; gameOver = false;
     gameCombo = 0; gameComboTimer = 0; gameFever = false; gameFeverTimer = 0;
     updateComboUI();
