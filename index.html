@@ -280,14 +280,48 @@
     .key-cap { display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-bottom:3px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);font-family:'Noto Sans KR',sans-serif;transition:all 0.1s;min-width:36px;text-align:center; }
     .key-cap.active { background:rgba(57,255,20,0.2);border-color:rgba(57,255,20,0.5);border-bottom-color:rgba(57,255,20,0.3);color:#39ff14;box-shadow:0 0 8px rgba(57,255,20,0.3); }
 
-    @keyframes feverBorder { 0%,100%{box-shadow:inset 0 0 30px rgba(255,100,0,0.4),0 0 30px rgba(255,100,0,0.3)} 50%{box-shadow:inset 0 0 60px rgba(255,50,0,0.7),0 0 60px rgba(255,50,0,0.5)} }
-    @keyframes feverBorderFast { 0%,100%{box-shadow:inset 0 0 40px rgba(255,50,0,0.6),0 0 40px rgba(255,50,0,0.5)} 50%{box-shadow:inset 0 0 80px rgba(255,0,0,0.9),0 0 80px rgba(255,0,0,0.7)} }
-    @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
-    #feverOverlay { position:absolute;inset:0;pointer-events:none;z-index:5;border-radius:0;transition:opacity 0.3s; }
-    #feverOverlay.active { animation: feverBorder 1s infinite; }
-    #feverOverlay.active.max { animation: feverBorderFast 0.5s infinite; }
-    .fever-gauge-fill { transition: width 0.15s linear; }
-    .fever-gauge-fill.fever { background: linear-gradient(90deg,#f97316,#ef4444,#f97316); background-size:200% auto; animation: shimmer 1.5s linear infinite, comboPulse 0.8s infinite; }
+    @keyframes feverFlash {
+  0%,100% { opacity: 0.16; }
+  50% { opacity: 0.30; }
+}
+
+@keyframes shimmer {
+  0% { background-position:200% center; }
+  100% { background-position:-200% center; }
+}
+
+#feverOverlay {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:5;
+  border-radius:0;
+  opacity:0;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,120,0,0.22), transparent 45%),
+    linear-gradient(90deg, rgba(255,80,0,0.18), transparent 18%, transparent 82%, rgba(255,80,0,0.18));
+  transition:opacity 0.25s;
+  will-change: opacity;
+}
+
+#feverOverlay.active {
+  animation: feverFlash 1s infinite;
+}
+
+#feverOverlay.active.max {
+  animation: feverFlash 0.5s infinite;
+  opacity: 0.34;
+}
+
+.fever-gauge-fill {
+  transition: width 0.15s linear;
+}
+
+.fever-gauge-fill.fever {
+  background: linear-gradient(90deg,#f97316,#ef4444,#f97316);
+  background-size:200% auto;
+  animation: shimmer 1.5s linear infinite;
+}
   </style>
 </head>
 <body>
