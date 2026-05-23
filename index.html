@@ -1334,8 +1334,17 @@ const SFX = {
   ],
 };
 
-const LIGHTNING_IMG = new Image();
-LIGHTNING_IMG.src = 'https://lemon3480-sudo.github.io/leaf-clan/images/lightning.png';
+const LIGHTNING_IMGS = [
+  new Image(),
+  new Image()
+];
+
+LIGHTNING_IMGS[0].src = 'https://lemon3480-sudo.github.io/leaf-clan/images/thunder1.png';
+LIGHTNING_IMGS[1].src = 'https://lemon3480-sudo.github.io/leaf-clan/images/thunder2.png';
+
+function getRandomLightningImage() {
+  return LIGHTNING_IMGS[Math.floor(Math.random() * LIGHTNING_IMGS.length)];
+}
   SFX.bgm.loop = false;
   SFX.bgm.volume = 0.5;
   SFX.finish.volume = 0.7;
@@ -1421,10 +1430,10 @@ function spawnLightningWarning(now) {
     strikeAt: now + LIGHTNING_WARN_TIME,
     endAt: now + LIGHTNING_WARN_TIME + LIGHTNING_LINGER_TIME,
     thunderPlayed: false,
-    hitPlayer: false
+    hitPlayer: false,
+    img: getRandomLightningImage()
   });
 }
-
 function updateChorusEvent() {
   if (!gameRunning || gameOver) return;
 
@@ -1586,14 +1595,14 @@ function drawLightningStrike(ctx, bolt, now) {
   ctx.fillRect(0, 0, GAME_W, GAME_H);
 
   // 번개 이미지 사용, 없으면 픽셀 번개 fallback
-  if (LIGHTNING_IMG.complete && LIGHTNING_IMG.naturalWidth > 0) {
-    ctx.globalAlpha = alpha;
-    const h = GROUND_Y + 40;
-    const w = 190;
-    ctx.drawImage(LIGHTNING_IMG, bolt.x - w / 2, -20, w, h);
-  } else {
-    drawPixelLightningFallback(ctx, bolt.x, alpha);
-  }
+  if (bolt.img && bolt.img.complete && bolt.img.naturalWidth > 0) {
+  ctx.globalAlpha = alpha;
+  const h = GROUND_Y + 40;
+  const w = 190;
+  ctx.drawImage(bolt.img, bolt.x - w / 2, -20, w, h);
+} else {
+  drawPixelLightningFallback(ctx, bolt.x, alpha);
+}
 
   // 바닥 충격 픽셀
   ctx.globalAlpha = 0.7 * alpha;
