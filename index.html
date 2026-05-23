@@ -344,6 +344,73 @@
   left: calc(100% + 24px);
   transform: translateY(-50%) scaleX(-1);
 }
+
+@keyframes hyperFeverBannerMove {
+  0% {
+    opacity: 0;
+    transform: translate(-62%, -50%) scale(0.9);
+    filter: blur(2px);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-54%, -50%) scale(1.06);
+    filter: blur(0);
+  }
+  72% {
+    opacity: 1;
+    transform: translate(-44%, -50%) scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-34%, -50%) scale(0.96);
+    filter: blur(2px);
+  }
+}
+
+.hyper-fever-banner {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 1000;
+  pointer-events: none;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(34px, 5vw, 78px);
+  font-weight: 900;
+  color: #c084fc;
+  letter-spacing: 7px;
+  text-align: center;
+  text-shadow:
+    4px 4px 0 #35104f,
+    -3px 3px 0 #35104f,
+    3px -3px 0 #35104f,
+    0 0 14px rgba(192,132,252,0.95),
+    0 0 34px rgba(168,85,247,0.75),
+    0 0 58px rgba(126,34,206,0.55);
+  animation: hyperFeverBannerMove 1.75s ease-out forwards;
+}
+
+.hyper-fever-banner::before,
+.hyper-fever-banner::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 110px;
+  height: 8px;
+  background: linear-gradient(90deg, transparent, #a855f7, #f0abfc);
+  image-rendering: pixelated;
+  box-shadow: 0 0 18px rgba(168,85,247,0.9);
+}
+
+.hyper-fever-banner::before {
+  right: calc(100% + 26px);
+  transform: translateY(-50%);
+}
+
+.hyper-fever-banner::after {
+  left: calc(100% + 26px);
+  transform: translateY(-50%) scaleX(-1);
+}
     .key-cap { display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-bottom:3px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);font-family:'Noto Sans KR',sans-serif;transition:all 0.1s;min-width:36px;text-align:center; }
     .key-cap.active { background:rgba(57,255,20,0.2);border-color:rgba(57,255,20,0.5);border-bottom-color:rgba(57,255,20,0.3);color:#39ff14;box-shadow:0 0 8px rgba(57,255,20,0.3); }
 
@@ -1303,20 +1370,38 @@ const FEVER_TRIGGER = 20;
 // BGM 시작 기준
 // 1차 후렴: 1:08.85 ~ 1:33.45
 // 2차 후렴: 2:14.50 ~ 2:42.13
+// 마지막 후렴: 2:42.13 ~ 3:06.23
 const CHORUS_EVENTS = [
-  { id: 1, start: 68.85, end: 93.45, pillagers: false },
-  { id: 2, start: 134.50, end: 162.13, pillagers: true }
+  { id: 1, start: 68.85,  end: 93.45,  pillagers: false, hyper: false, withers: false },
+  { id: 2, start: 134.50, end: 162.13, pillagers: true,  hyper: false, withers: false },
+  { id: 3, start: 162.13, end: 186.23, pillagers: true,  hyper: true,  withers: true  }
 ];
 
 const CHORUS_SPEED_MULT = 1.15;
+
 const LIGHTNING_INTERVAL = 1.3;
 const LIGHTNING_WARN_TIME = 0.7;
 const LIGHTNING_LINGER_TIME = 0.3;
 const LIGHTNING_STUN_FRAMES = 90; // 약 1.5초
 
-const PILLAGER_SHOT_SIDE_INTERVAL = 0.65; // 좌우 번갈아 발사. 한 마리 기준 1.3초
+// 일반 후렴: 좌우 번갈아 0.65초마다 발사 = 한 마리 기준 1.3초
+const PILLAGER_SHOT_SIDE_INTERVAL = 0.65;
+
+// 마지막 후렴: 발사 빈도 75% 감소 = 기존보다 덜 자주 발사
+const HYPER_PILLAGER_SHOT_SIDE_INTERVAL = 2.6;
+
 const PILLAGER_ARROW_GRAVITY = 0.17;
 const PILLAGER_ARROW_DAMAGE = 1;
+
+// 마지막 후렴 화살 강화
+const HYPER_PILLAGER_ARROW_SPEED_MULT = 1.35;
+const HYPER_PILLAGER_ARROW_GRAVITY_MULT = 0.78;
+
+// 위더
+const WITHER_SHOT_INTERVAL = 1.25;
+const WITHER_SKULL_SPEED = 13.8;
+const WITHER_DOT_TICKS = 3;
+const WITHER_DOT_INTERVAL = 21; // 약 0.35초
 
 let gameActiveChorus = null;
 let gameChorusEventActive = false;
@@ -1329,11 +1414,22 @@ let gamePillagerArrows = [];
 let gameNextPillagerShotAt = 0;
 let gameNextPillagerSide = 'left';
 
+let gameWithers = [];
+let gameWitherSkulls = [];
+let gameWitherDotTicks = 0;
+let gameWitherDotTimer = 0;
+
 const ILLAGER_IMG = new Image();
 ILLAGER_IMG.src = 'https://lemon3480-sudo.github.io/leaf-clan/images/illager.png';
 
 const PILLAGER_ARROW_IMG = new Image();
 PILLAGER_ARROW_IMG.src = 'https://lemon3480-sudo.github.io/leaf-clan/images/arrow.png';
+
+const WITHER_IMG = new Image();
+WITHER_IMG.src = 'https://lemon3480-sudo.github.io/leaf-clan/images/wither.png';
+
+const WITHER_SKULL_IMG = new Image();
+WITHER_SKULL_IMG.src = 'https://lemon3480-sudo.github.io/leaf-clan/images/witherskull.png';
 
 const BASE = 'https://lemon3480-sudo.github.io/leaf-clan/sounds/';
 const SFX = {
@@ -1368,8 +1464,13 @@ function getRandomLightningImage() {
   return LIGHTNING_IMGS[Math.floor(Math.random() * LIGHTNING_IMGS.length)];
 }
   SFX.bgm.loop = false;
-  SFX.bgm.volume = 0.5;
-  SFX.finish.volume = 0.7;
+SFX.bgm.volume = 0.5;
+SFX.finish.volume = 0.7;
+
+// TNT / 위더 해골 폭발음 볼륨 감소
+SFX.explode.forEach(s => {
+  s.volume = 0.32;
+});
 
   function playBGM() { SFX.bgm.currentTime = 0; SFX.bgm.play().catch(()=>{}); }
   function stopBGM() { SFX.bgm.pause(); SFX.bgm.currentTime = 0; }
@@ -1428,6 +1529,21 @@ function getRandomLightningImage() {
   }, 1200);
 }
 
+function showHyperFeverBanner() {
+  const oldBanner = document.querySelector('.hyper-fever-banner');
+  if (oldBanner) oldBanner.remove();
+
+  const banner = document.createElement('div');
+  banner.className = 'hyper-fever-banner';
+  banner.textContent = 'Hyper Fever !';
+
+  document.body.appendChild(banner);
+
+  setTimeout(() => {
+    banner.remove();
+  }, 1800);
+}
+
 function getBgmTime() {
   return SFX.bgm ? SFX.bgm.currentTime || 0 : 0;
 }
@@ -1475,13 +1591,20 @@ function updateChorusEvent() {
     gameFeverTimer = FEVER_TIME;
 
     playSFX('fever');
-    showFeverBanner();
-    showFloatText(
-      GAME_W / 2,
-      GAME_H / 3 + 80,
-      activeEvent.pillagers ? 'RAID CHORUS!' : 'CHORUS EVENT!',
-      activeEvent.pillagers ? '#ff2b1f' : '#ff4d00'
-    );
+
+    if (activeEvent.hyper) {
+      showHyperFeverBanner();
+      initWithers(now);
+      showFloatText(GAME_W / 2, GAME_H / 3 + 90, 'WITHER RAID!', '#c084fc');
+    } else {
+      showFeverBanner();
+      showFloatText(
+        GAME_W / 2,
+        GAME_H / 3 + 80,
+        activeEvent.pillagers ? 'RAID CHORUS!' : 'CHORUS EVENT!',
+        activeEvent.pillagers ? '#ff2b1f' : '#ff4d00'
+      );
+    }
   }
 
   if (!activeEvent && gameChorusEventActive) {
@@ -1493,11 +1616,14 @@ function updateChorusEvent() {
     gameNextPillagerShotAt = 0;
     gameLightnings = [];
     gamePillagerArrows = [];
+    gameWithers = [];
+    gameWitherSkulls = [];
 
-    if (gameFeverTimer <= 0 || gameCombo < FEVER_TRIGGER) {
-      gameFever = false;
-      gameFeverTimer = 0;
-    }
+    // 후렴구 피버 종료 후 일반 콤보 피버가 이어지는 버그 방지
+    gameCombo = 0;
+    gameComboTimer = 0;
+    gameFever = false;
+    gameFeverTimer = 0;
 
     updateComboUI();
   }
@@ -1514,7 +1640,10 @@ function updateChorusEvent() {
     if (gameActiveChorus && gameActiveChorus.pillagers && now >= gameNextPillagerShotAt) {
       spawnPillagerVolley(gameNextPillagerSide);
       gameNextPillagerSide = gameNextPillagerSide === 'left' ? 'right' : 'left';
-      gameNextPillagerShotAt += PILLAGER_SHOT_SIDE_INTERVAL;
+
+      gameNextPillagerShotAt += gameActiveChorus.hyper
+        ? HYPER_PILLAGER_SHOT_SIDE_INTERVAL
+        : PILLAGER_SHOT_SIDE_INTERVAL;
     }
   }
 }
@@ -1717,16 +1846,21 @@ function drawPillagers(ctx) {
 
 function spawnPillagerVolley(side) {
   const fromLeft = side === 'left';
+  const hyper = isHyperChorusActive();
 
-  // 약탈자가 들고 있는 쇠뇌 위치쯤에서 발사
   const startX = fromLeft ? 110 : GAME_W - 110;
   const startY = GROUND_Y - 165 + (Math.random() - 0.5) * 28;
 
   for (let i = 0; i < 3; i++) {
-    // 화살마다 거리/높이/속도 랜덤
-    const horizontalSpeed = 7.4 + Math.random() * 3.2;   // 7.4 ~ 10.6
-    const verticalPower = 5.2 + Math.random() * 5.0;      // 5.2 ~ 10.2
-    const spreadY = (Math.random() - 0.5) * 2.4;          // 위아래 흔들림
+    let horizontalSpeed = 7.4 + Math.random() * 3.2;
+    let verticalPower = 5.2 + Math.random() * 5.0;
+
+    if (hyper) {
+      horizontalSpeed *= HYPER_PILLAGER_ARROW_SPEED_MULT;
+      verticalPower *= 1.08;
+    }
+
+    const spreadY = (Math.random() - 0.5) * 2.4;
     const delayOffset = i * 0.15;
 
     const vx = fromLeft ? horizontalSpeed : -horizontalSpeed;
@@ -1737,10 +1871,11 @@ function spawnPillagerVolley(side) {
       y: startY + (Math.random() - 0.5) * 22,
       vx,
       vy,
-      size: 42 + Math.random() * 8,
+      size: hyper ? 46 + Math.random() * 8 : 42 + Math.random() * 8,
       fromLeft,
       hit: false,
-      delay: delayOffset
+      delay: delayOffset,
+      hyper
     });
   }
 }
@@ -1780,7 +1915,7 @@ if (a.delay && a.delay > 0) {
 
 a.x += a.vx * getGameplaySpeedMult();
 a.y += a.vy * getGameplaySpeedMult();
-a.vy += PILLAGER_ARROW_GRAVITY * getGameplaySpeedMult();
+a.vy += PILLAGER_ARROW_GRAVITY * (a.hyper ? HYPER_PILLAGER_ARROW_GRAVITY_MULT : 1) * getGameplaySpeedMult();
 
 drawPillagerArrow(ctx, a);
 
@@ -1806,6 +1941,272 @@ drawPillagerArrow(ctx, a);
 
     if (a.x < -80 || a.x > GAME_W + 80 || a.y > GAME_H + 80) {
       gamePillagerArrows.splice(i, 1);
+    }
+  }
+}
+
+function initWithers(now) {
+  gameWithers = [
+    {
+      x: 230,
+      y: 120,
+      vx: 8.5,
+      vy: 1.2,
+      w: 210,
+      h: 150,
+      nextShotAt: now + 0.75,
+      nextDirChangeAt: now + 0.9
+    },
+    {
+      x: GAME_W - 230,
+      y: 165,
+      vx: -8.5,
+      vy: -1.0,
+      w: 210,
+      h: 150,
+      nextShotAt: now + 1.35,
+      nextDirChangeAt: now + 1.15
+    }
+  ];
+
+  gameWitherSkulls = [];
+}
+
+function randomizeWitherDirection(w, now) {
+  w.vx = (Math.random() < 0.5 ? -1 : 1) * (6.5 + Math.random() * 5.5);
+  w.vy = (Math.random() - 0.5) * 4.0;
+  w.nextDirChangeAt = now + 0.45 + Math.random() * 0.9;
+}
+
+function drawWither(ctx, w) {
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+
+  const drawX = w.x - w.w / 2;
+  const drawY = w.y - w.h / 2;
+
+  // wither.png는 기본적으로 왼쪽을 바라봄.
+  // 오른쪽으로 이동할 때는 좌우반전해서 오른쪽을 보게 함.
+  const facingRight = w.vx > 0;
+
+  if (WITHER_IMG.complete && WITHER_IMG.naturalWidth > 0) {
+    if (facingRight) {
+      ctx.translate(drawX + w.w, drawY);
+      ctx.scale(-1, 1);
+      ctx.drawImage(WITHER_IMG, 0, 0, w.w, w.h);
+    } else {
+      ctx.drawImage(WITHER_IMG, drawX, drawY, w.w, w.h);
+    }
+  } else {
+    ctx.fillStyle = '#222';
+    ctx.fillRect(drawX, drawY, w.w, w.h);
+    ctx.fillStyle = '#555';
+    ctx.fillRect(drawX + 60, drawY + 40, 90, 50);
+  }
+
+  ctx.restore();
+}
+
+function spawnWitherSkull(w, now) {
+  if (!gamePlayer) return;
+
+  const hb = getPlayerHitbox(gamePlayer);
+  const targetX = hb.x + hb.w / 2 + (Math.random() - 0.5) * 80;
+  const targetY = hb.y + hb.h / 2 + (Math.random() - 0.5) * 40;
+
+  const startX = w.x;
+  const startY = w.y + 20;
+
+  const dx = targetX - startX;
+  const dy = targetY - startY;
+  const len = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+
+  const vx = dx / len * WITHER_SKULL_SPEED;
+  const vy = dy / len * WITHER_SKULL_SPEED;
+
+  let groundX = targetX;
+  if (vy > 0) {
+    const t = (GROUND_Y - startY) / vy;
+    groundX = startX + vx * t;
+  }
+  groundX = Math.max(30, Math.min(GAME_W - 30, groundX));
+
+  gameWitherSkulls.push({
+    x: startX,
+    y: startY,
+    vx,
+    vy,
+    size: 58,
+    groundX,
+    exploded: false,
+    explosionFrame: 0
+  });
+
+  w.nextShotAt = now + WITHER_SHOT_INTERVAL + Math.random() * 0.45;
+}
+
+function applyWitherDotDamage() {
+  gameWitherDotTicks = Math.max(gameWitherDotTicks, WITHER_DOT_TICKS);
+  if (gameWitherDotTimer <= 0) {
+    gameWitherDotTimer = WITHER_DOT_INTERVAL;
+  }
+}
+
+function updateWitherDotDamage() {
+  if (gameWitherDotTicks <= 0 || gameOver) return;
+
+  gameWitherDotTimer--;
+
+  if (gameWitherDotTimer <= 0) {
+    gameHearts = Math.max(0, gameHearts - 1);
+    gameWitherDotTicks--;
+    gameWitherDotTimer = WITHER_DOT_INTERVAL;
+    gameUpdateHearts();
+
+    const hb = gamePlayer ? getPlayerHitbox(gamePlayer) : { x: GAME_W / 2, y: GROUND_Y - 120, w: 1, h: 1 };
+    showFloatText(hb.x + hb.w / 2, hb.y, 'WITHER -1❤️', '#a855f7');
+  }
+}
+
+function explodeWitherSkull(skull) {
+  if (skull.exploded) return;
+
+  skull.exploded = true;
+  skull.explosionFrame = 1;
+
+  playSFX('explode');
+
+  gameExplosions.push({
+    x: skull.x,
+    y: skull.y,
+    frame: 0,
+    alpha: 0.8,
+    fromDirect: false,
+    pieces: createMinecraftExplosionPieces(skull.x, skull.y)
+  });
+}
+
+function drawWitherSkull(ctx, skull) {
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+
+  const angle = Math.atan2(skull.vy, skull.vx);
+  ctx.translate(skull.x, skull.y);
+  ctx.rotate(angle);
+
+  if (WITHER_SKULL_IMG.complete && WITHER_SKULL_IMG.naturalWidth > 0) {
+    ctx.drawImage(WITHER_SKULL_IMG, -skull.size / 2, -skull.size / 2, skull.size, skull.size);
+  } else {
+    ctx.fillStyle = '#111';
+    ctx.fillRect(-skull.size / 2, -skull.size / 2, skull.size, skull.size);
+    ctx.fillStyle = '#a855f7';
+    ctx.fillRect(-12, -10, 8, 8);
+    ctx.fillRect(6, -10, 8, 8);
+  }
+
+  ctx.restore();
+}
+
+function drawWitherSkullGuide(ctx, skull) {
+  ctx.save();
+
+  ctx.globalAlpha = 0.5;
+  ctx.strokeStyle = '#ff2b1f';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([16, 12]);
+
+  ctx.beginPath();
+  ctx.moveTo(skull.x, skull.y);
+  ctx.lineTo(skull.groundX, GROUND_Y);
+  ctx.stroke();
+
+  ctx.setLineDash([]);
+
+  ctx.globalAlpha = 0.7;
+  ctx.fillStyle = '#ff2b1f';
+  ctx.fillRect(skull.groundX - 36, GROUND_Y - 10, 72, 8);
+
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = '#ff2b1f';
+  ctx.fillRect(skull.groundX - 50, GROUND_Y - 22, 100, 10);
+
+  ctx.restore();
+}
+
+function updateAndDrawWithers(ctx, hb) {
+  if (!gameActiveChorus || !gameActiveChorus.withers) return;
+
+  const now = getBgmTime();
+
+  for (const w of gameWithers) {
+    if (now >= w.nextDirChangeAt) {
+      randomizeWitherDirection(w, now);
+    }
+
+    w.x += w.vx;
+    w.y += w.vy;
+
+    // 맵 이탈 방지
+    if (w.x < 130) {
+      w.x = 130;
+      w.vx = Math.abs(w.vx);
+    }
+    if (w.x > GAME_W - 130) {
+      w.x = GAME_W - 130;
+      w.vx = -Math.abs(w.vx);
+    }
+
+    if (w.y < 70) {
+      w.y = 70;
+      w.vy = Math.abs(w.vy);
+    }
+    if (w.y > 300) {
+      w.y = 300;
+      w.vy = -Math.abs(w.vy);
+    }
+
+    if (now >= w.nextShotAt) {
+      spawnWitherSkull(w, now);
+    }
+
+    drawWither(ctx, w);
+  }
+
+  for (let i = gameWitherSkulls.length - 1; i >= 0; i--) {
+    const skull = gameWitherSkulls[i];
+
+    if (skull.exploded) {
+      skull.explosionFrame++;
+      if (skull.explosionFrame > 12) {
+        gameWitherSkulls.splice(i, 1);
+      }
+      continue;
+    }
+
+    drawWitherSkullGuide(ctx, skull);
+
+    skull.x += skull.vx;
+    skull.y += skull.vy;
+
+    drawWitherSkull(ctx, skull);
+
+    const skullBox = {
+      x: skull.x - skull.size / 2,
+      y: skull.y - skull.size / 2,
+      w: skull.size,
+      h: skull.size
+    };
+
+    if (!gameOver && !gameIntroPhase && rectsOverlap(skullBox, hb)) {
+      explodeWitherSkull(skull);
+      applyWitherDotDamage();
+      if (!isDebuffFeverProtected()) breakCombo();
+      showFloatText(skull.x, skull.y, 'WITHER!', '#a855f7');
+      continue;
+    }
+
+    if (skull.y >= GROUND_Y || skull.x < -80 || skull.x > GAME_W + 80 || skull.y < -120) {
+      explodeWitherSkull(skull);
     }
   }
 }
@@ -2033,22 +2434,47 @@ function updateComboUI() {
     });
   }
 
-  function drawFeverCanvasEffect(ctx) {
+  function isHyperChorusActive() {
+  return gameActiveChorus && gameActiveChorus.hyper;
+}
+
+function getFeverTheme() {
+  if (isHyperChorusActive()) {
+    return {
+      tint: '#c084fc',
+      edge: '#a855f7',
+      stroke: '#d8b4fe',
+      alphaBase: 0.10,
+      alphaPulse: 0.05
+    };
+  }
+
+  return {
+    tint: '#f97316',
+    edge: '#ff4d00',
+    stroke: '#ff8a00',
+    alphaBase: 0.11,
+    alphaPulse: 0.04
+  };
+}
+
+function drawFeverCanvasEffect(ctx) {
   if (!gameFever && gameCombo <= 99) return;
 
-  const isMax = gameCombo > 99;
+  const isMax = gameCombo > 99 || isHyperChorusActive();
   const pulse = 0.5 + Math.sin(performance.now() / 140) * 0.5;
+  const theme = getFeverTheme();
 
   ctx.save();
 
-  // 화면 전체를 약하게 주황빛으로 물들이기
-  ctx.globalAlpha = isMax ? 0.18 + pulse * 0.06 : 0.11 + pulse * 0.04;
-  ctx.fillStyle = '#f97316';
+  // 화면 전체 피버 색감
+  ctx.globalAlpha = (isMax ? theme.alphaBase + 0.07 : theme.alphaBase) + pulse * theme.alphaPulse;
+  ctx.fillStyle = theme.tint;
   ctx.fillRect(0, 0, GAME_W, GAME_H);
 
   // 가장자리 피버 느낌
-  ctx.globalAlpha = isMax ? 0.28 + pulse * 0.08 : 0.18 + pulse * 0.06;
-  ctx.fillStyle = '#ff4d00';
+  ctx.globalAlpha = isMax ? 0.25 + pulse * 0.08 : 0.16 + pulse * 0.05;
+  ctx.fillStyle = theme.edge;
 
   const edge = isMax ? 34 : 24;
   ctx.fillRect(0, 0, GAME_W, edge);
@@ -2056,9 +2482,9 @@ function updateComboUI() {
   ctx.fillRect(0, 0, edge, GAME_H);
   ctx.fillRect(GAME_W - edge, 0, edge, GAME_H);
 
-  // 얇은 네온 테두리
+  // 네온 테두리
   ctx.globalAlpha = isMax ? 0.75 : 0.55;
-  ctx.strokeStyle = '#ff8a00';
+  ctx.strokeStyle = theme.stroke;
   ctx.lineWidth = isMax ? 8 : 5;
   ctx.strokeRect(8, 8, GAME_W - 16, GAME_H - 16);
 
@@ -2507,6 +2933,8 @@ else if (item.type === 'tnt') {
 
     drawLightnings(gameCtx);
 updateAndDrawPillagerArrows(gameCtx, hb);
+updateAndDrawWithers(gameCtx, hb);
+updateWitherDotDamage();
 
 for (let i = gameParticles.length-1; i >= 0; i--) {
       const pt = gameParticles[i];
@@ -2871,6 +3299,10 @@ startGameTimer();
     gameScore = 0; gameHearts = 3; gameItems = []; gameParticles = []; gameExplosions = [];
 gameLightnings = [];
 gamePillagerArrows = [];
+gameWithers = [];
+gameWitherSkulls = [];
+gameWitherDotTicks = 0;
+gameWitherDotTimer = 0;
 
 gameScoreTimer = 0; gameSpawnTimer = 0; gameOver = false;
 gameCombo = 0; gameComboTimer = 0; gameFever = false; gameFeverTimer = 0;
