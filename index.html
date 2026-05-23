@@ -532,12 +532,12 @@
             <div id="hudUserInfo" style="font-size:13px;color:rgba(255,255,255,0.55);">디스코드 미연동</div>
           </div>
 
-          <div style="position:absolute;top:20px;right:20px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:14px 22px;">
+          <div id="gameHealthPanel" style="display:none;position:absolute;top:20px;right:20px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:14px 22px;">
             <div style="font-size:12px;color:rgba(255,255,255,0.45);letter-spacing:1px;margin-bottom:8px;text-align:center;">HEALTH</div>
             <div id="hudHearts" style="font-size:30px;letter-spacing:6px;display:flex;gap:6px;align-items:center;">❤️❤️❤️</div>
           </div>
 
-          <div style="position:absolute;top:120px;right:20px;background:rgba(0,0,0,0.6);border:1px solid rgba(57,255,20,0.25);border-radius:14px;padding:16px 20px;min-width:220px;">
+          <div id="gameRankPanel" style="display:none;position:absolute;top:120px;right:20px;background:rgba(0,0,0,0.6);border:1px solid rgba(57,255,20,0.25);border-radius:14px;padding:16px 20px;min-width:220px;">
             <div style="font-size:12px;color:rgba(57,255,20,0.8);font-weight:700;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
               <span>🏆</span> LEADERBOARD
             </div>
@@ -552,7 +552,7 @@
             <div id="gameTimerText" style="font-family:'Press Start 2P',monospace;font-size:18px;color:#fff;text-align:center;">3:00</div>
           </div>
 
-          <div style="position:absolute;bottom:20px;left:20px;display:flex;gap:8px;align-items:center;">
+          <div id="gameKeyPanel" style="position:absolute;bottom:20px;left:20px;display:none;gap:8px;align-items:center;">
             <div id="keyA" class="key-cap" style="font-size:14px;padding:8px 14px;min-width:44px;">A</div>
             <div id="keyD" class="key-cap" style="font-size:14px;padding:8px 14px;min-width:44px;">D</div>
             <div id="keySpace" class="key-cap" style="font-size:14px;padding:8px 14px;min-width:80px;">SPACE</div>
@@ -1728,7 +1728,17 @@ function rectsOverlap(a,b) {
     return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
   }
 
-  function gameUpdateHearts() {
+  function setGameplayHudVisible(visible) {
+  const healthPanel = document.getElementById('gameHealthPanel');
+  const rankPanel = document.getElementById('gameRankPanel');
+  const keyPanel = document.getElementById('gameKeyPanel');
+
+  if (healthPanel) healthPanel.style.display = visible ? 'block' : 'none';
+  if (rankPanel) rankPanel.style.display = visible ? 'block' : 'none';
+  if (keyPanel) keyPanel.style.display = visible ? 'flex' : 'none';
+}
+
+function gameUpdateHearts() {
     const f = '❤️'.repeat(Math.max(0,gameHearts));
     const e = '🖤'.repeat(Math.max(0,5-gameHearts));
     const el = document.getElementById('hudHearts');
@@ -2052,10 +2062,12 @@ overlay.innerHTML = `
     await wait(300);
 
     // START - 배경 밝아지고 게임 시작
-    introOverlay.style.background = 'rgba(0,0,0,0)';
-    show('START !', '#39ff14', '0 0 20px rgba(57,255,20,0.9), 0 0 40px rgba(57,255,20,0.5)');
-    gameIntroPhase = false; // 아이템 드롭 시작
-    startGameTimer();
+introOverlay.style.background = 'rgba(0,0,0,0)';
+show('START !', '#39ff14', '0 0 20px rgba(57,255,20,0.9), 0 0 40px rgba(57,255,20,0.5)');
+
+setGameplayHudVisible(true);
+gameIntroPhase = false; // 아이템 드롭 시작
+startGameTimer();
 
     // START 페이드아웃
     await wait(300);
@@ -2090,6 +2102,7 @@ overlay.innerHTML = `
     document.getElementById('gameOverlay').style.display = 'none';
     document.getElementById('gameHUD').style.display = 'block';
     document.getElementById('gameTimerHUD').style.display = 'none';
+    setGameplayHudVisible(false);
 
     const timerEl = document.getElementById('gameTimerText');
     if (timerEl) { timerEl.textContent = '3:00'; timerEl.style.color = '#fff'; }
