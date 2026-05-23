@@ -1263,18 +1263,17 @@
   function addCombo() {
     gameCombo++;
     gameComboTimer = COMBO_TIME;
+
     if (gameCombo > 99) {
       gameFever = true;
-    } else {
-      if (gameFever && gameFeverTimer > 0) {
-        gameFeverTimer--;
-        if (gameFeverTimer === 0) { gameFever = false; updateComboUI(); }
-      }
-      if (gameCombo > 0 && gameComboTimer > 0) {
-        gameComboTimer--;
-        if (gameComboTimer === 0) breakCombo();
-      }
+      gameFeverTimer = FEVER_TIME;
+    } else if (gameCombo % FEVER_TRIGGER === 0) {
+      gameFever = true;
+      gameFeverTimer = FEVER_TIME;
+      showFloatText(GAME_W / 2, GAME_H / 3, '🔥 FEVER TIME! 🔥', '#f97316');
     }
+
+    updateComboUI();
   }
 
   function breakCombo() {
