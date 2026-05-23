@@ -347,17 +347,14 @@
     .key-cap { display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-bottom:3px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);font-family:'Noto Sans KR',sans-serif;transition:all 0.1s;min-width:36px;text-align:center; }
     .key-cap.active { background:rgba(57,255,20,0.2);border-color:rgba(57,255,20,0.5);border-bottom-color:rgba(57,255,20,0.3);color:#39ff14;box-shadow:0 0 8px rgba(57,255,20,0.3); }
 
-    @keyframes feverFlash {
-  0%,100% { opacity: 0.16; }
-  50% { opacity: 0.30; }
-}
-
-@keyframes shimmer {
+    @keyframes shimmer {
   0% { background-position:200% center; }
   100% { background-position:-200% center; }
 }
 
 #feverOverlay {
+  display: none !important;
+}
 
 .fever-gauge-fill {
   transition: width 0.15s linear;
@@ -1435,10 +1432,14 @@ function updateComboUI() {
       gameFever = true;
       gameFeverTimer = FEVER_TIME;
     } else if (gameCombo % FEVER_TRIGGER === 0) {
+      gameFever = true;
+      gameFeverTimer = FEVER_TIME;
+      playSFX('fever');
+      showFeverBanner();
+    }
 
     updateComboUI();
   }
-
   function breakCombo() {
     gameCombo = 0;
     gameComboTimer = 0;
