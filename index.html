@@ -1294,24 +1294,48 @@ window.showPage = function(page, el) {
   let gameFever = false;
   let gameFeverTimer = 0;
   const COMBO_TIME = 420;
-  const FEVER_TIME = 600;
-  const FEVER_TRIGGER = 20;
+const FEVER_TIME = 600;
+const FEVER_TRIGGER = 20;
 
-  const BASE = 'https://lemon3480-sudo.github.io/leaf-clan/sounds/';
-  const SFX = {
-    bgm:      new Audio(BASE + 'meltcpk.mp3'),
-    finish:   new Audio(BASE + 'meltfinish.mp3'),
-    pick:     new Audio(BASE + 'orb.ogg'),
-    hit:      new Audio(BASE + 'hit1.ogg'),
-    gameover: new Audio(BASE + 'death.ogg'),
-    fever:    new Audio(BASE + 'blazehit1.ogg'),
-    explode:  [
-      new Audio(BASE + 'explode1.ogg'),
-      new Audio(BASE + 'explode2.ogg'),
-      new Audio(BASE + 'explode3.ogg'),
-      new Audio(BASE + 'explode4.ogg'),
-    ],
-  };
+// ===== CHORUS EVENT =====
+// BGM 시작 기준 1:08.85 ~ 1:33.45
+const CHORUS_EVENT_START = 68.85;
+const CHORUS_EVENT_END = 93.45;
+const CHORUS_SPEED_MULT = 1.15;
+const LIGHTNING_INTERVAL = 1.3;
+const LIGHTNING_WARN_TIME = 0.7;
+const LIGHTNING_LINGER_TIME = 0.3;
+const LIGHTNING_STUN_FRAMES = 90; // 약 1.5초
+
+let gameChorusEventActive = false;
+let gameChorusFeverLock = false;
+let gameNextLightningAt = 0;
+let gameLightnings = [];
+let gamePlayerStunTimer = 0;
+
+const BASE = 'https://lemon3480-sudo.github.io/leaf-clan/sounds/';
+const SFX = {
+  bgm:      new Audio(BASE + 'meltcpk.mp3'),
+  finish:   new Audio(BASE + 'meltfinish.mp3'),
+  pick:     new Audio(BASE + 'orb.ogg'),
+  hit:      new Audio(BASE + 'hit1.ogg'),
+  gameover: new Audio(BASE + 'death.ogg'),
+  fever:    new Audio(BASE + 'blazehit1.ogg'),
+  thunder:  [
+    new Audio(BASE + 'thunder1.mp3'),
+    new Audio(BASE + 'thunder2.mp3'),
+    new Audio(BASE + 'thunder3.mp3'),
+  ],
+  explode:  [
+    new Audio(BASE + 'explode1.ogg'),
+    new Audio(BASE + 'explode2.ogg'),
+    new Audio(BASE + 'explode3.ogg'),
+    new Audio(BASE + 'explode4.ogg'),
+  ],
+};
+
+const LIGHTNING_IMG = new Image();
+LIGHTNING_IMG.src = 'https://lemon3480-sudo.github.io/leaf-clan/images/lightning.png';
   SFX.bgm.loop = false;
   SFX.bgm.volume = 0.5;
   SFX.finish.volume = 0.7;
@@ -1319,13 +1343,19 @@ window.showPage = function(page, el) {
   function playBGM() { SFX.bgm.currentTime = 0; SFX.bgm.play().catch(()=>{}); }
   function stopBGM() { SFX.bgm.pause(); SFX.bgm.currentTime = 0; }
   function playSFX(key) {
-    if (key === 'explode') {
-      const s = SFX.explode[Math.floor(Math.random() * 4)];
-      s.currentTime = 0; s.play().catch(()=>{});
-    } else {
-      SFX[key].currentTime = 0; SFX[key].play().catch(()=>{});
-    }
+  if (key === 'explode') {
+    const s = SFX.explode[Math.floor(Math.random() * SFX.explode.length)];
+    s.currentTime = 0;
+    s.play().catch(()=>{});
+  } else if (key === 'thunder') {
+    const s = SFX.thunder[Math.floor(Math.random() * SFX.thunder.length)];
+    s.currentTime = 0;
+    s.play().catch(()=>{});
+  } else {
+    SFX[key].currentTime = 0;
+    SFX[key].play().catch(()=>{});
   }
+}
 
   // 게임 타이머 관련
   const GAME_DURATION = 180; // 3분
@@ -1365,6 +1395,232 @@ window.showPage = function(page, el) {
   setTimeout(() => {
     banner.remove();
   }, 1200);
+}
+
+function getBgmTime() {
+  return SFX.bgm ? SFX.bgm.currentTime || 0 : 0;
+}
+
+function isChorusEventTime() {
+  const t = getBgmTime();
+  return t >= CHORUS_EVENT_START && t <= CHORUS_EVENT_END;
+}
+
+function isDebuffFeverProtected() {
+  return gameChorusEventActive || gameChorusFeverLock;
+}
+
+function getGameplaySpeedMult() {
+  return gameChorusEventActive ? CHORUS_SPEED_MULT : 1;
+}
+
+function spawnLightningWarning(now) {
+  gameLightnings.push({
+    x: 90 + Math.random() * (GAME_W - 180),
+    createdAt: now,
+    strikeAt: now + LIGHTNING_WARN_TIME,
+    endAt: now + LIGHTNING_WARN_TIME + LIGHTNING_LINGER_TIME,
+    thunderPlayed: false,
+    hitPlayer: false
+  });
+}
+
+function updateChorusEvent() {
+  if (!gameRunning || gameOver) return;
+
+  const now = getBgmTime();
+  const active = now >= CHORUS_EVENT_START && now <= CHORUS_EVENT_END;
+
+  if (active && !gameChorusEventActive) {
+    gameChorusEventActive = true;
+    gameChorusFeverLock = true;
+    gameNextLightningAt = now;
+    gameFever = true;
+    gameFeverTimer = FEVER_TIME;
+
+    playSFX('fever');
+    showFeverBanner();
+    showFloatText(GAME_W / 2, GAME_H / 3 + 80, 'CHORUS EVENT!', '#ff4d00');
+  }
+
+  if (!active && gameChorusEventActive) {
+    gameChorusEventActive = false;
+    gameChorusFeverLock = false;
+    gameNextLightningAt = 0;
+    gameLightnings = [];
+
+    // 일반 콤보 피버가 남아있지 않다면 이벤트 종료와 함께 피버 해제
+    if (gameFeverTimer <= 0 || gameCombo < FEVER_TRIGGER) {
+      gameFever = false;
+      gameFeverTimer = 0;
+    }
+
+    updateComboUI();
+  }
+
+  if (gameChorusEventActive) {
+    gameFever = true;
+    gameFeverTimer = FEVER_TIME;
+
+    if (now >= gameNextLightningAt) {
+      spawnLightningWarning(now);
+      gameNextLightningAt += LIGHTNING_INTERVAL;
+    }
+  }
+}
+
+function drawPixelLightningFallback(ctx, x, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.imageSmoothingEnabled = false;
+
+  const topY = -20;
+  const points = [
+    [x - 18, topY],
+    [x + 22, 150],
+    [x - 8, 150],
+    [x + 28, 360],
+    [x - 18, 360],
+    [x + 18, GROUND_Y],
+    [x - 34, GROUND_Y - 250],
+    [x + 0, GROUND_Y - 250],
+    [x - 28, GROUND_Y - 470],
+    [x + 8, GROUND_Y - 470]
+  ];
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    if (i === 0) ctx.moveTo(p[0], p[1]);
+    else ctx.lineTo(p[0], p[1]);
+  });
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.globalAlpha = alpha * 0.55;
+  ctx.strokeStyle = '#6ee7ff';
+  ctx.lineWidth = 10;
+  ctx.stroke();
+
+  ctx.globalAlpha = alpha * 0.45;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawLightningWarning(ctx, bolt, now) {
+  const warnProgress = Math.max(0, Math.min(1, (now - bolt.createdAt) / LIGHTNING_WARN_TIME));
+  const pulse = 0.45 + Math.sin(performance.now() / 70) * 0.25;
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+
+  ctx.globalAlpha = 0.16 + pulse * 0.16;
+  ctx.fillStyle = '#ff1f1f';
+  ctx.fillRect(bolt.x - 28, 0, 56, GROUND_Y);
+
+  ctx.globalAlpha = 0.55 + pulse * 0.25;
+  ctx.strokeStyle = '#ff2b1f';
+  ctx.lineWidth = 4;
+  ctx.setLineDash([18, 14]);
+  ctx.beginPath();
+  ctx.moveTo(bolt.x, 0);
+  ctx.lineTo(bolt.x, GROUND_Y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.globalAlpha = 0.55;
+  ctx.fillStyle = '#ff2b1f';
+  ctx.fillRect(bolt.x - 42, GROUND_Y - 12, 84, 8);
+
+  ctx.globalAlpha = 0.75;
+  ctx.font = "bold 18px 'Press Start 2P'";
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ff4d00';
+  ctx.fillText('⚠', bolt.x, Math.max(44, 100 - warnProgress * 30));
+
+  ctx.restore();
+}
+
+function damagePlayerByLightning(bolt) {
+  if (!gamePlayer || bolt.hitPlayer) return;
+
+  const hb = getPlayerHitbox(gamePlayer);
+  const lightningBox = {
+    x: bolt.x - 34,
+    y: 0,
+    w: 68,
+    h: GROUND_Y
+  };
+
+  if (rectsOverlap(hb, lightningBox)) {
+    bolt.hitPlayer = true;
+    gameHearts = Math.max(0, gameHearts - 2);
+    gamePlayerStunTimer = LIGHTNING_STUN_FRAMES;
+    gameKeys = {};
+
+    gameUpdateHearts();
+    showFloatText(hb.x + hb.w / 2, hb.y, '-2❤️ STUN!', '#ff2b1f');
+  }
+}
+
+function drawLightningStrike(ctx, bolt, now) {
+  const remain = Math.max(0, bolt.endAt - now);
+  const alpha = Math.min(1, remain / LIGHTNING_LINGER_TIME);
+
+  if (!bolt.thunderPlayed) {
+    bolt.thunderPlayed = true;
+    playSFX('thunder');
+  }
+
+  damagePlayerByLightning(bolt);
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+
+  // 순간 섬광
+  ctx.globalAlpha = 0.10 * alpha;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, GAME_W, GAME_H);
+
+  // 번개 이미지 사용, 없으면 픽셀 번개 fallback
+  if (LIGHTNING_IMG.complete && LIGHTNING_IMG.naturalWidth > 0) {
+    ctx.globalAlpha = alpha;
+    const h = GROUND_Y + 40;
+    const w = 190;
+    ctx.drawImage(LIGHTNING_IMG, bolt.x - w / 2, -20, w, h);
+  } else {
+    drawPixelLightningFallback(ctx, bolt.x, alpha);
+  }
+
+  // 바닥 충격 픽셀
+  ctx.globalAlpha = 0.7 * alpha;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(bolt.x - 54, GROUND_Y - 8, 108, 10);
+  ctx.fillStyle = '#6ee7ff';
+  ctx.fillRect(bolt.x - 38, GROUND_Y - 20, 76, 8);
+  ctx.fillStyle = '#ff4d00';
+  ctx.fillRect(bolt.x - 24, GROUND_Y - 32, 48, 8);
+
+  ctx.restore();
+}
+
+function drawLightnings(ctx) {
+  const now = getBgmTime();
+
+  for (let i = gameLightnings.length - 1; i >= 0; i--) {
+    const bolt = gameLightnings[i];
+
+    if (now < bolt.strikeAt) {
+      drawLightningWarning(ctx, bolt, now);
+    } else if (now <= bolt.endAt) {
+      drawLightningStrike(ctx, bolt, now);
+    } else {
+      gameLightnings.splice(i, 1);
+    }
+  }
 }
 
 function updateComboUI() {
@@ -1441,12 +1697,20 @@ function updateComboUI() {
     updateComboUI();
   }
   function breakCombo() {
-    gameCombo = 0;
-    gameComboTimer = 0;
-    gameFever = false;
-    gameFeverTimer = 0;
+  if (isDebuffFeverProtected()) {
+    gameComboTimer = COMBO_TIME;
+    gameFever = true;
+    gameFeverTimer = FEVER_TIME;
     updateComboUI();
+    return;
   }
+
+  gameCombo = 0;
+  gameComboTimer = 0;
+  gameFever = false;
+  gameFeverTimer = 0;
+  updateComboUI();
+}
 
   function updateCombo(add) {
     if (add) addCombo();
@@ -1792,8 +2056,10 @@ let gameExplosions = [];
         gameScore = Math.floor(gameScore * 0.8);
         showFloatText(x, y, '💥 폭발! -20%', '#ff8c00');
       }
-      breakCombo();
-      gameUpdateHearts();
+      if (!isDebuffFeverProtected()) {
+  breakCombo();
+}
+gameUpdateHearts();
     }
   }
 
@@ -1950,17 +2216,37 @@ function gameUpdateHearts() {
 
   function gameLoop() {
     if (!gameRunning || !gameCtx) return;
+
+    updateChorusEvent();
+
     gameCtx.clearRect(0,0,GAME_W,GAME_H);
     gameDrawBg(gameCtx);
 
     const p = gamePlayer;
-    p.crouching = gameKeys['ShiftLeft'] || gameKeys['ShiftRight'];
-    const isSprinting = gameKeys['ControlLeft'] || gameKeys['ControlRight'];
-    let speed = 7.5;
-    if (p.crouching) speed *= 0.4;
-    else if (isSprinting) speed *= 1.3;
-    if (gameKeys['KeyA']) p.x -= speed;
-    if (gameKeys['KeyD']) p.x += speed;
+    const speedMult = getGameplaySpeedMult();
+
+    if (gamePlayerStunTimer > 0) {
+      gamePlayerStunTimer--;
+      p.crouching = false;
+      gameKeys['KeyA'] = false;
+      gameKeys['KeyD'] = false;
+      gameKeys['Space'] = false;
+      gameKeys['ShiftLeft'] = false;
+      gameKeys['ShiftRight'] = false;
+      gameKeys['ControlLeft'] = false;
+      gameKeys['ControlRight'] = false;
+    } else {
+      p.crouching = gameKeys['ShiftLeft'] || gameKeys['ShiftRight'];
+      const isSprinting = gameKeys['ControlLeft'] || gameKeys['ControlRight'];
+
+      let speed = 7.5 * speedMult;
+      if (p.crouching) speed *= 0.4;
+      else if (isSprinting) speed *= 1.3;
+
+      if (gameKeys['KeyA']) p.x -= speed;
+      if (gameKeys['KeyD']) p.x += speed;
+    }
+
     p.x = Math.max(0, Math.min(GAME_W - p.w, p.x));
     p.vy += GRAVITY;
     p.y += p.vy;
@@ -1968,27 +2254,29 @@ function gameUpdateHearts() {
     else { p.onGround = false; }
 
     gameDrawPlayer(gameCtx, p);
-drawExplosions(gameCtx);
-drawFeverCanvasEffect(gameCtx);
-
+    drawExplosions(gameCtx);
+    drawFeverCanvasEffect(gameCtx);
     const hb = getPlayerHitbox(p);
 
     gameScoreTimer++;
     if (gameScoreTimer >= 3) { gameScore += 55; gameScoreTimer = 0; }
 
-    if (gameCombo > 99) {
-      gameFever = true;
-    } else {
-      if (gameFever && gameFeverTimer > 0) {
-        gameFeverTimer--;
-        if (gameFeverTimer === 0) gameFever = false;
-      }
-      if (gameCombo > 0 && gameComboTimer > 0) {
-        gameComboTimer--;
-        if (gameComboTimer === 0) breakCombo();
-      }
-    }
-    updateComboUI();
+    if (gameChorusEventActive) {
+  gameFever = true;
+  gameFeverTimer = FEVER_TIME;
+} else if (gameCombo > 99) {
+  gameFever = true;
+} else {
+  if (gameFever && gameFeverTimer > 0) {
+    gameFeverTimer--;
+    if (gameFeverTimer === 0) gameFever = false;
+  }
+  if (gameCombo > 0 && gameComboTimer > 0) {
+    gameComboTimer--;
+    if (gameComboTimer === 0) breakCombo();
+  }
+}
+updateComboUI();
 
     if (!gameIntroPhase) {
       gameSpawnTimer++;
@@ -1997,8 +2285,8 @@ drawFeverCanvasEffect(gameCtx);
 
     for (let i = gameItems.length-1; i >= 0; i--) {
       const item = gameItems[i];
-      item.y += item.vy;
-      item.rot += item.rotSpeed;
+      item.y += item.vy * getGameplaySpeedMult();
+item.rot += item.rotSpeed * getGameplaySpeedMult();
       gameDrawItem(gameCtx, item);
       const ib = { x: item.x - item.size/2, y: item.y - item.size/2, w: item.size, h: item.size };
       if (!gameOver && !gameIntroPhase && rectsOverlap(ib, hb)) {
@@ -2008,8 +2296,16 @@ drawFeverCanvasEffect(gameCtx);
         else if (item.type === 'emerald') { const pts=30000*mult; gameScore+=pts; addCombo(); playSFX('pick'); showFloatText(item.x, item.y, '+'+pts.toLocaleString()+(gameFever?'🔥':''), '#2ecc71'); }
         else if (item.type === 'gold') { const pts=5000*mult; gameScore+=pts; addCombo(); playSFX('pick'); showFloatText(item.x, item.y, '+'+pts.toLocaleString()+(gameFever?'🔥':''), '#f5c518'); }
         else if (item.type === 'heart') { gameHearts=Math.min(5,gameHearts+1); gameUpdateHearts(); addCombo(); playSFX('pick'); showFloatText(item.x, item.y, '+1❤️', '#e74c3c'); }
-        else if (item.type === 'arrow') { gameHearts--; gameUpdateHearts(); breakCombo(); playSFX('hit'); showFloatText(item.x, item.y, '-1❤️', '#e74c3c'); }
-        else if (item.type === 'tnt') { triggerExplosion(item.x, item.y, true); }
+        else if (item.type === 'arrow') {
+  gameHearts--;
+  gameUpdateHearts();
+  if (!isDebuffFeverProtected()) breakCombo();
+  playSFX('hit');
+  showFloatText(item.x, item.y, '-1❤️', '#e74c3c');
+}
+else if (item.type === 'tnt') {
+  triggerExplosion(item.x, item.y, true);
+}
       } else if (item.y > GAME_H + 30) {
         gameItems.splice(i, 1);
       } else if (item.type === 'tnt' && !item.exploded && item.y >= GROUND_Y - item.size/2) {
@@ -2019,7 +2315,9 @@ drawFeverCanvasEffect(gameCtx);
       }
     }
 
-    for (let i = gameParticles.length-1; i >= 0; i--) {
+    drawLightnings(gameCtx);
+
+for (let i = gameParticles.length-1; i >= 0; i--) {
       const pt = gameParticles[i];
       gameCtx.save();
       gameCtx.globalAlpha = pt.alpha;
@@ -2380,9 +2678,14 @@ startGameTimer();
 
   window.gameStart = async function() {
     gameScore = 0; gameHearts = 3; gameItems = []; gameParticles = []; gameExplosions = [];
-    gameScoreTimer = 0; gameSpawnTimer = 0; gameOver = false;
-    gameCombo = 0; gameComboTimer = 0; gameFever = false; gameFeverTimer = 0;
-    gameTimeLeft = GAME_DURATION;
+gameLightnings = [];
+gameScoreTimer = 0; gameSpawnTimer = 0; gameOver = false;
+gameCombo = 0; gameComboTimer = 0; gameFever = false; gameFeverTimer = 0;
+gameChorusEventActive = false;
+gameChorusFeverLock = false;
+gameNextLightningAt = 0;
+gamePlayerStunTimer = 0;
+gameTimeLeft = GAME_DURATION;
     if (gameTimerInterval) clearInterval(gameTimerInterval);
     updateComboUI();
 
@@ -2431,12 +2734,15 @@ startGameTimer();
   document.addEventListener('keydown', e => {
     gameKeys[e.code] = true;
     if (e.code === 'Space' && gameRunning) {
-      e.preventDefault();
-      if (gamePlayer && gamePlayer.jumpCount < 2) {
-        gamePlayer.vy = JUMP_FORCE;
-        gamePlayer.jumpCount++;
-      }
-    }
+  e.preventDefault();
+
+  if (gamePlayerStunTimer > 0) return;
+
+  if (gamePlayer && gamePlayer.jumpCount < 2) {
+    gamePlayer.vy = JUMP_FORCE;
+    gamePlayer.jumpCount++;
+  }
+}
     if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && gameRunning) e.preventDefault();
     if ((e.code === 'KeyA' || e.code === 'KeyD') && gameRunning) e.preventDefault();
   });
