@@ -291,27 +291,6 @@
 }
 
 #feverOverlay {
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:5;
-  border-radius:0;
-  opacity:0;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(255,120,0,0.22), transparent 45%),
-    linear-gradient(90deg, rgba(255,80,0,0.18), transparent 18%, transparent 82%, rgba(255,80,0,0.18));
-  transition:opacity 0.25s;
-  will-change: opacity;
-}
-
-#feverOverlay.active {
-  animation: feverFlash 1s infinite;
-}
-
-#feverOverlay.active.max {
-  animation: feverFlash 0.5s infinite;
-  opacity: 0.34;
-}
 
 .fever-gauge-fill {
   transition: width 0.15s linear;
@@ -1352,14 +1331,8 @@ window.showPage = function(page, el) {
     }
 
     if (feverOverlay) {
-      if (gameFever || isMax) {
-        feverOverlay.classList.add('active');
-        if (isMax) feverOverlay.classList.add('max');
-        else feverOverlay.classList.remove('max');
-      } else {
-        feverOverlay.classList.remove('active', 'max');
-      }
-    }
+  feverOverlay.classList.remove('active', 'max');
+}
 
     if (hudCombo) {
       if (gameCombo >= 2) {
@@ -1530,7 +1503,39 @@ window.showPage = function(page, el) {
     });
   }
 
-  function gameDrawPlayer(ctx, p) {
+  function drawFeverCanvasEffect(ctx) {
+  if (!gameFever && gameCombo <= 99) return;
+
+  const isMax = gameCombo > 99;
+  const pulse = 0.5 + Math.sin(performance.now() / 140) * 0.5;
+
+  ctx.save();
+
+  // 화면 전체를 약하게 주황빛으로 물들이기
+  ctx.globalAlpha = isMax ? 0.18 + pulse * 0.06 : 0.11 + pulse * 0.04;
+  ctx.fillStyle = '#f97316';
+  ctx.fillRect(0, 0, GAME_W, GAME_H);
+
+  // 가장자리 피버 느낌
+  ctx.globalAlpha = isMax ? 0.28 + pulse * 0.08 : 0.18 + pulse * 0.06;
+  ctx.fillStyle = '#ff4d00';
+
+  const edge = isMax ? 34 : 24;
+  ctx.fillRect(0, 0, GAME_W, edge);
+  ctx.fillRect(0, GAME_H - edge, GAME_W, edge);
+  ctx.fillRect(0, 0, edge, GAME_H);
+  ctx.fillRect(GAME_W - edge, 0, edge, GAME_H);
+
+  // 얇은 네온 테두리
+  ctx.globalAlpha = isMax ? 0.75 : 0.55;
+  ctx.strokeStyle = '#ff8a00';
+  ctx.lineWidth = isMax ? 8 : 5;
+  ctx.strokeRect(8, 8, GAME_W - 16, GAME_H - 16);
+
+  ctx.restore();
+}
+
+function gameDrawPlayer(ctx, p) {
     const cx = p.x + p.w/2;
     const cr = p.crouching;
     const by = p.y + p.h;
@@ -1884,7 +1889,8 @@ function gameUpdateHearts() {
     else { p.onGround = false; }
 
     gameDrawPlayer(gameCtx, p);
-    drawExplosions(gameCtx);
+drawExplosions(gameCtx);
+drawFeverCanvasEffect(gameCtx);
 
     const hb = getPlayerHitbox(p);
 
