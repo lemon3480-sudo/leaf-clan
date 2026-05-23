@@ -1678,11 +1678,12 @@ function getPillagerDrawInfo(side) {
   const h = 210;
   const y = GROUND_Y - h + 20;
 
+  // 화면 안으로 더 들어오게 해서 약탈자가 더 잘 보이도록 조정
   if (side === 'left') {
-    return { side, x: -92, y, w, h };
+    return { side, x: -35, y, w, h };
   }
 
-  return { side, x: GAME_W - 78, y, w, h };
+  return { side, x: GAME_W - 135, y, w, h };
 }
 
 function drawPillagers(ctx) {
@@ -2497,6 +2498,7 @@ else if (item.type === 'tnt') {
     }
 
     drawLightnings(gameCtx);
+updateAndDrawPillagerArrows(gameCtx, hb);
 
 for (let i = gameParticles.length-1; i >= 0; i--) {
       const pt = gameParticles[i];
