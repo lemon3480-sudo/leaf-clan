@@ -545,8 +545,65 @@
           </div>
 
         <div id="gameIntroOverlay" style="display:none;position:absolute;inset:0;z-index:20;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:rgba(0,0,0,0);transition:background 0.3s;">
-            <div id="gameIntroText" style="font-family:'Press Start 2P',monospace;font-size:52px;color:#fff;text-shadow:0 0 20px rgba(255,255,255,0.8),0 0 40px rgba(57,255,20,0.5);letter-spacing:6px;text-align:center;transition:opacity 0.8s;opacity:1;"></div>
-          </div>
+  <div id="gameIntroText" style="font-family:'Press Start 2P',monospace;font-size:52px;color:#fff;text-shadow:0 0 20px rgba(255,255,255,0.8),0 0 40px rgba(57,255,20,0.5);letter-spacing:6px;text-align:center;transition:opacity 0.8s;opacity:1;"></div>
+</div>
+
+<div id="gameLeaveConfirmOverlay" style="display:none;position:absolute;inset:0;z-index:40;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);">
+  <div style="
+    min-width:420px;
+    background:rgba(5,12,7,0.92);
+    border:2px solid rgba(57,255,20,0.45);
+    border-radius:18px;
+    padding:34px 42px;
+    box-shadow:0 0 35px rgba(57,255,20,0.22), 0 8px 40px rgba(0,0,0,0.65);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+  ">
+    <div style="
+      font-family:'Press Start 2P',monospace;
+      font-size:20px;
+      color:#39ff14;
+      text-shadow:0 0 14px rgba(57,255,20,0.9), 0 0 32px rgba(57,255,20,0.45);
+      text-align:center;
+      line-height:1.6;
+    ">게임을 중단하시겠습니까?</div>
+
+    <div style="
+      font-size:13px;
+      color:rgba(255,255,255,0.55);
+      text-align:center;
+      line-height:1.6;
+    ">YES를 누르면 현재 게임이 종료되고 페이지가 이동됩니다.</div>
+
+    <div style="display:flex;gap:14px;margin-top:4px;">
+      <button onclick="confirmLeaveGame()" style="
+        background:#e74c3c;
+        border:2px solid #9f2419;
+        color:#fff;
+        font-family:'Press Start 2P',monospace;
+        font-size:12px;
+        padding:13px 30px;
+        cursor:pointer;
+        border-radius:8px;
+        box-shadow:0 0 16px rgba(231,76,60,0.35);
+      ">YES</button>
+
+      <button onclick="cancelLeaveGame()" style="
+        background:#39ff14;
+        border:2px solid #1c9b0a;
+        color:#051005;
+        font-family:'Press Start 2P',monospace;
+        font-size:12px;
+        padding:13px 30px;
+        cursor:pointer;
+        border-radius:8px;
+        box-shadow:0 0 18px rgba(57,255,20,0.45);
+      ">NO</button>
+    </div>
+  </div>
+</div>
 
           <div id="gameTimerHUD" style="display:none;position:absolute;top:20px;left:50%;transform:translateX(-50%);margin-top:70px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:6px 20px;z-index:12;">
             <div id="gameTimerText" style="font-family:'Press Start 2P',monospace;font-size:18px;color:#fff;text-align:center;">3:00</div>
@@ -614,13 +671,30 @@
     game:    'https://lemon3480-sudo.github.io/leaf-clan/images/bg.png',
   };
 
-  window.showPage = function(page, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-    document.getElementById('page-' + page).classList.add('active');
-    if (el) el.classList.add('active');
-    document.getElementById('bgImg').src = bgImages[page] || bgImages.members;
+  function switchPageDirect(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('bgImg').src = bgImages[page] || bgImages.members;
+}
+
+window.showPage = function(page, el) {
+  const gamePageActive = document.getElementById('page-game')?.classList.contains('active');
+
+  if (
+    page !== 'game' &&
+    gamePageActive &&
+    gameRunning &&
+    !gameOver &&
+    !gameIntroPhase
+  ) {
+    showLeaveGameConfirm(page, el);
+    return;
   }
+
+  switchPageDirect(page, el);
+}
 
   let nickMode = 'anon';
 
@@ -1181,6 +1255,10 @@
   let gameTimeLeft = GAME_DURATION;
   let gameTimerInterval = null;
   let gameIntroPhase = false;
+  let gameLeaveTargetPage = null;
+  let gameLeaveTargetEl = null;
+  let gamePausedForLeaveConfirm = false;
+  let gameBgmWasPlayingBeforePause = false;
 
   function showFloatText(x, y, text, color) {
     const el = document.createElement('div');
@@ -1932,31 +2010,135 @@ overlay.innerHTML = `
     gameAnimFrame = requestAnimationFrame(gameLoop);
   }
 
-  function startGameTimer() {
-    gameTimeLeft = GAME_DURATION;
-    const timerEl = document.getElementById('gameTimerText');
-    const timerHUD = document.getElementById('gameTimerHUD');
-    timerHUD.style.display = 'block';
+  function runGameTimerInterval() {
+  const timerEl = document.getElementById('gameTimerText');
 
-    if (gameTimerInterval) clearInterval(gameTimerInterval);
-    gameTimerInterval = setInterval(() => {
-      gameTimeLeft--;
-      const m = Math.floor(gameTimeLeft / 60);
-      const s = gameTimeLeft % 60;
-      if (timerEl) timerEl.textContent = m + ':' + String(s).padStart(2, '0');
+  if (gameTimerInterval) clearInterval(gameTimerInterval);
 
-      if (gameTimeLeft <= 10) {
-        if (timerEl) timerEl.style.color = '#e74c3c';
-      }
+  gameTimerInterval = setInterval(() => {
+    gameTimeLeft--;
 
-      if (gameTimeLeft <= 0) {
-        clearInterval(gameTimerInterval);
-        triggerGameFinish();
-      }
-    }, 1000);
+    const m = Math.floor(gameTimeLeft / 60);
+    const s = gameTimeLeft % 60;
+    if (timerEl) timerEl.textContent = m + ':' + String(s).padStart(2, '0');
+
+    if (gameTimeLeft <= 10) {
+      if (timerEl) timerEl.style.color = '#e74c3c';
+    }
+
+    if (gameTimeLeft <= 0) {
+      clearInterval(gameTimerInterval);
+      gameTimerInterval = null;
+      triggerGameFinish();
+    }
+  }, 1000);
+}
+
+function startGameTimer() {
+  gameTimeLeft = GAME_DURATION;
+
+  const timerEl = document.getElementById('gameTimerText');
+  const timerHUD = document.getElementById('gameTimerHUD');
+
+  if (timerHUD) timerHUD.style.display = 'block';
+  if (timerEl) {
+    timerEl.style.color = '#fff';
+    timerEl.textContent = '3:00';
   }
 
-  function showResultScreen() {
+  runGameTimerInterval();
+}
+
+  function showLeaveGameConfirm(page, el) {
+  gameLeaveTargetPage = page;
+  gameLeaveTargetEl = el;
+  gamePausedForLeaveConfirm = true;
+
+  gameRunning = false;
+
+  if (gameAnimFrame) {
+    cancelAnimationFrame(gameAnimFrame);
+    gameAnimFrame = null;
+  }
+
+  if (gameTimerInterval) {
+    clearInterval(gameTimerInterval);
+    gameTimerInterval = null;
+  }
+
+  gameBgmWasPlayingBeforePause = !SFX.bgm.paused && !SFX.bgm.ended;
+  SFX.bgm.pause();
+
+  gameKeys = {};
+
+  const leaveOverlay = document.getElementById('gameLeaveConfirmOverlay');
+  if (leaveOverlay) leaveOverlay.style.display = 'flex';
+}
+
+window.cancelLeaveGame = function() {
+  const leaveOverlay = document.getElementById('gameLeaveConfirmOverlay');
+  if (leaveOverlay) leaveOverlay.style.display = 'none';
+
+  if (!gamePausedForLeaveConfirm) return;
+
+  gamePausedForLeaveConfirm = false;
+  gameRunning = true;
+
+  if (gameBgmWasPlayingBeforePause) {
+    SFX.bgm.play().catch(() => {});
+  }
+
+  runGameTimerInterval();
+
+  if (gameAnimFrame) cancelAnimationFrame(gameAnimFrame);
+  gameLoop();
+
+  gameLeaveTargetPage = null;
+  gameLeaveTargetEl = null;
+}
+
+window.confirmLeaveGame = function() {
+  const leaveOverlay = document.getElementById('gameLeaveConfirmOverlay');
+  if (leaveOverlay) leaveOverlay.style.display = 'none';
+
+  gamePausedForLeaveConfirm = false;
+  gameRunning = false;
+  gameOver = true;
+  gameKeys = {};
+
+  if (gameAnimFrame) {
+    cancelAnimationFrame(gameAnimFrame);
+    gameAnimFrame = null;
+  }
+
+  if (gameTimerInterval) {
+    clearInterval(gameTimerInterval);
+    gameTimerInterval = null;
+  }
+
+  stopBGM();
+
+  const timerHUD = document.getElementById('gameTimerHUD');
+  if (timerHUD) timerHUD.style.display = 'none';
+
+  const introOverlay = document.getElementById('gameIntroOverlay');
+  if (introOverlay) introOverlay.style.display = 'none';
+
+  const gameHUD = document.getElementById('gameHUD');
+  if (gameHUD) gameHUD.style.display = 'none';
+
+  const gameOverlay = document.getElementById('gameOverlay');
+  if (gameOverlay) gameOverlay.style.display = 'flex';
+
+  if (gameLeaveTargetPage) {
+    switchPageDirect(gameLeaveTargetPage, gameLeaveTargetEl);
+  }
+
+  gameLeaveTargetPage = null;
+  gameLeaveTargetEl = null;
+}
+
+function showResultScreen() {
     const name = discordUserGame ? (discordUserGame.global_name || discordUserGame.username) : '익명';
     gameSaveRank(name, gameScore);
     stopBGM();
