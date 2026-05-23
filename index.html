@@ -1299,19 +1299,41 @@ const FEVER_TRIGGER = 20;
 
 // ===== CHORUS EVENT =====
 // BGM 시작 기준 1:08.85 ~ 1:33.45
-const CHORUS_EVENT_START = 68.85;
-const CHORUS_EVENT_END = 93.45;
+// ===== CHORUS EVENTS =====
+// BGM 시작 기준
+// 1차 후렴: 1:08.85 ~ 1:33.45
+// 2차 후렴: 2:14.50 ~ 2:42.13
+const CHORUS_EVENTS = [
+  { id: 1, start: 68.85, end: 93.45, pillagers: false },
+  { id: 2, start: 134.50, end: 162.13, pillagers: true }
+];
+
 const CHORUS_SPEED_MULT = 1.15;
 const LIGHTNING_INTERVAL = 1.3;
 const LIGHTNING_WARN_TIME = 0.7;
 const LIGHTNING_LINGER_TIME = 0.3;
 const LIGHTNING_STUN_FRAMES = 90; // 약 1.5초
 
+const PILLAGER_SHOT_SIDE_INTERVAL = 0.65; // 좌우 번갈아 발사. 한 마리 기준 1.3초
+const PILLAGER_ARROW_GRAVITY = 0.22;
+const PILLAGER_ARROW_DAMAGE = 1;
+
+let gameActiveChorus = null;
 let gameChorusEventActive = false;
 let gameChorusFeverLock = false;
 let gameNextLightningAt = 0;
 let gameLightnings = [];
 let gamePlayerStunTimer = 0;
+
+let gamePillagerArrows = [];
+let gameNextPillagerShotAt = 0;
+let gameNextPillagerSide = 'left';
+
+const ILLAGER_IMG = new Image();
+ILLAGER_IMG.src = 'https://lemon3480-sudo.github.io/leaf-clan/images/illager.png';
+
+const PILLAGER_ARROW_IMG = new Image();
+PILLAGER_ARROW_IMG.src = 'https://lemon3480-sudo.github.io/leaf-clan/images/arrow.png';
 
 const BASE = 'https://lemon3480-sudo.github.io/leaf-clan/sounds/';
 const SFX = {
@@ -1410,9 +1432,9 @@ function getBgmTime() {
   return SFX.bgm ? SFX.bgm.currentTime || 0 : 0;
 }
 
-function isChorusEventTime() {
+function getActiveChorusEvent() {
   const t = getBgmTime();
-  return t >= CHORUS_EVENT_START && t <= CHORUS_EVENT_END;
+  return CHORUS_EVENTS.find(ev => t >= ev.start && t <= ev.end) || null;
 }
 
 function isDebuffFeverProtected() {
@@ -1438,27 +1460,40 @@ function updateChorusEvent() {
   if (!gameRunning || gameOver) return;
 
   const now = getBgmTime();
-  const active = now >= CHORUS_EVENT_START && now <= CHORUS_EVENT_END;
+  const activeEvent = getActiveChorusEvent();
 
-  if (active && !gameChorusEventActive) {
+  if (activeEvent && (!gameChorusEventActive || !gameActiveChorus || gameActiveChorus.id !== activeEvent.id)) {
+    gameActiveChorus = activeEvent;
     gameChorusEventActive = true;
     gameChorusFeverLock = true;
+
     gameNextLightningAt = now;
+    gameNextPillagerShotAt = now + 0.35;
+    gameNextPillagerSide = 'left';
+
     gameFever = true;
     gameFeverTimer = FEVER_TIME;
 
     playSFX('fever');
     showFeverBanner();
-    showFloatText(GAME_W / 2, GAME_H / 3 + 80, 'CHORUS EVENT!', '#ff4d00');
+    showFloatText(
+      GAME_W / 2,
+      GAME_H / 3 + 80,
+      activeEvent.pillagers ? 'RAID CHORUS!' : 'CHORUS EVENT!',
+      activeEvent.pillagers ? '#ff2b1f' : '#ff4d00'
+    );
   }
 
-  if (!active && gameChorusEventActive) {
+  if (!activeEvent && gameChorusEventActive) {
+    gameActiveChorus = null;
     gameChorusEventActive = false;
     gameChorusFeverLock = false;
-    gameNextLightningAt = 0;
-    gameLightnings = [];
 
-    // 일반 콤보 피버가 남아있지 않다면 이벤트 종료와 함께 피버 해제
+    gameNextLightningAt = 0;
+    gameNextPillagerShotAt = 0;
+    gameLightnings = [];
+    gamePillagerArrows = [];
+
     if (gameFeverTimer <= 0 || gameCombo < FEVER_TRIGGER) {
       gameFever = false;
       gameFeverTimer = 0;
@@ -1474,6 +1509,12 @@ function updateChorusEvent() {
     if (now >= gameNextLightningAt) {
       spawnLightningWarning(now);
       gameNextLightningAt += LIGHTNING_INTERVAL;
+    }
+
+    if (gameActiveChorus && gameActiveChorus.pillagers && now >= gameNextPillagerShotAt) {
+      spawnPillagerVolley(gameNextPillagerSide);
+      gameNextPillagerSide = gameNextPillagerSide === 'left' ? 'right' : 'left';
+      gameNextPillagerShotAt += PILLAGER_SHOT_SIDE_INTERVAL;
     }
   }
 }
@@ -1628,6 +1669,134 @@ function drawLightnings(ctx) {
       drawLightningStrike(ctx, bolt, now);
     } else {
       gameLightnings.splice(i, 1);
+    }
+  }
+}
+
+function getPillagerDrawInfo(side) {
+  const w = 170;
+  const h = 210;
+  const y = GROUND_Y - h + 20;
+
+  if (side === 'left') {
+    return { side, x: -92, y, w, h };
+  }
+
+  return { side, x: GAME_W - 78, y, w, h };
+}
+
+function drawPillagers(ctx) {
+  if (!gameActiveChorus || !gameActiveChorus.pillagers) return;
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+
+  const left = getPillagerDrawInfo('left');
+  const right = getPillagerDrawInfo('right');
+
+  // 왼쪽 약탈자: 오른쪽용 이미지를 코드로 좌우반전
+  if (ILLAGER_IMG.complete && ILLAGER_IMG.naturalWidth > 0) {
+    ctx.save();
+    ctx.translate(left.x + left.w, left.y);
+    ctx.scale(-1, 1);
+    ctx.drawImage(ILLAGER_IMG, 0, 0, left.w, left.h);
+    ctx.restore();
+
+    // 오른쪽 약탈자: 원본 그대로
+    ctx.drawImage(ILLAGER_IMG, right.x, right.y, right.w, right.h);
+  } else {
+    // 이미지 로딩 실패 시 간단한 픽셀 대체 표시
+    ctx.fillStyle = '#6b6b6b';
+    ctx.fillRect(0, GROUND_Y - 150, 70, 120);
+    ctx.fillRect(GAME_W - 70, GROUND_Y - 150, 70, 120);
+  }
+
+  ctx.restore();
+}
+
+function spawnPillagerVolley(side) {
+  const fromLeft = side === 'left';
+  const startX = fromLeft ? 85 : GAME_W - 85;
+  const startY = GROUND_Y - 185;
+
+  const baseVx = fromLeft ? 5.0 : -5.0;
+
+  // 3발씩 약간 다른 각도로 발사
+  const shots = [
+    { vx: baseVx * 0.96, vy: -8.2 },
+    { vx: baseVx * 1.06, vy: -7.4 },
+    { vx: baseVx * 0.88, vy: -6.7 }
+  ];
+
+  for (const s of shots) {
+    gamePillagerArrows.push({
+      x: startX,
+      y: startY,
+      vx: s.vx,
+      vy: s.vy,
+      size: 42,
+      fromLeft,
+      hit: false
+    });
+  }
+}
+
+function drawPillagerArrow(ctx, a) {
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.translate(a.x, a.y);
+
+  // arrow.png는 화살촉이 아래를 향한 이미지.
+  // 현재 이동 방향에 맞춰 자연스럽게 회전.
+  const angle = Math.atan2(a.vy, a.vx) - Math.PI / 2;
+  ctx.rotate(angle);
+
+  if (PILLAGER_ARROW_IMG.complete && PILLAGER_ARROW_IMG.naturalWidth > 0) {
+    ctx.drawImage(PILLAGER_ARROW_IMG, -a.size / 2, -a.size / 2, a.size, a.size);
+  } else {
+    ctx.fillStyle = '#c8c8c8';
+    ctx.fillRect(-3, -20, 6, 40);
+    ctx.fillStyle = '#8b5a2b';
+    ctx.fillRect(-2, 8, 4, 20);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(-8, 16, 16, 6);
+  }
+
+  ctx.restore();
+}
+
+function updateAndDrawPillagerArrows(ctx, hb) {
+  for (let i = gamePillagerArrows.length - 1; i >= 0; i--) {
+    const a = gamePillagerArrows[i];
+
+    a.x += a.vx * getGameplaySpeedMult();
+    a.y += a.vy * getGameplaySpeedMult();
+    a.vy += PILLAGER_ARROW_GRAVITY * getGameplaySpeedMult();
+
+    drawPillagerArrow(ctx, a);
+
+    const box = {
+      x: a.x - 14,
+      y: a.y - 14,
+      w: 28,
+      h: 28
+    };
+
+    if (!gameOver && !gameIntroPhase && rectsOverlap(box, hb)) {
+      gamePillagerArrows.splice(i, 1);
+
+      gameHearts = Math.max(0, gameHearts - PILLAGER_ARROW_DAMAGE);
+      gameUpdateHearts();
+
+      if (!isDebuffFeverProtected()) breakCombo();
+
+      playSFX('hit');
+      showFloatText(a.x, a.y, '-1❤️', '#e74c3c');
+      continue;
+    }
+
+    if (a.x < -80 || a.x > GAME_W + 80 || a.y > GAME_H + 80) {
+      gamePillagerArrows.splice(i, 1);
     }
   }
 }
@@ -2262,10 +2431,13 @@ function gameUpdateHearts() {
     if (p.y >= GROUND_Y - p.h) { p.y = GROUND_Y - p.h; p.vy = 0; p.onGround = true; p.jumpCount = 0; }
     else { p.onGround = false; }
 
-    gameDrawPlayer(gameCtx, p);
-    drawExplosions(gameCtx);
-    drawFeverCanvasEffect(gameCtx);
-    const hb = getPlayerHitbox(p);
+    drawPillagers(gameCtx);
+
+gameDrawPlayer(gameCtx, p);
+drawExplosions(gameCtx);
+drawFeverCanvasEffect(gameCtx);
+
+const hb = getPlayerHitbox(p);
 
     gameScoreTimer++;
     if (gameScoreTimer >= 3) { gameScore += 55; gameScoreTimer = 0; }
@@ -2688,11 +2860,19 @@ startGameTimer();
   window.gameStart = async function() {
     gameScore = 0; gameHearts = 3; gameItems = []; gameParticles = []; gameExplosions = [];
 gameLightnings = [];
+gamePillagerArrows = [];
+
 gameScoreTimer = 0; gameSpawnTimer = 0; gameOver = false;
 gameCombo = 0; gameComboTimer = 0; gameFever = false; gameFeverTimer = 0;
+
+gameActiveChorus = null;
 gameChorusEventActive = false;
 gameChorusFeverLock = false;
 gameNextLightningAt = 0;
+
+gameNextPillagerShotAt = 0;
+gameNextPillagerSide = 'left';
+
 gamePlayerStunTimer = 0;
 gameTimeLeft = GAME_DURATION;
     if (gameTimerInterval) clearInterval(gameTimerInterval);
