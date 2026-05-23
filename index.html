@@ -544,8 +544,8 @@
             <div id="hudRankList"></div>
           </div>
 
-        <div id="gameIntroOverlay" style="display:none;position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
-            <div id="gameIntroText" style="font-family:'Press Start 2P',monospace;font-size:52px;color:#fff;text-shadow:0 0 20px rgba(255,255,255,0.8),0 0 40px rgba(57,255,20,0.5);letter-spacing:6px;text-align:center;"></div>
+        <div id="gameIntroOverlay" style="display:none;position:absolute;inset:0;z-index:20;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:rgba(0,0,0,0);transition:background 0.3s;">
+            <div id="gameIntroText" style="font-family:'Press Start 2P',monospace;font-size:52px;color:#fff;text-shadow:0 0 20px rgba(255,255,255,0.8),0 0 40px rgba(57,255,20,0.5);letter-spacing:6px;text-align:center;transition:opacity 0.8s;opacity:1;"></div>
           </div>
 
           <div id="gameTimerHUD" style="display:none;position:absolute;top:20px;left:50%;transform:translateX(-50%);margin-top:70px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:6px 20px;z-index:12;">
@@ -1265,14 +1265,16 @@
     gameComboTimer = COMBO_TIME;
     if (gameCombo > 99) {
       gameFever = true;
-      gameFeverTimer = FEVER_TIME;
-    } else if (gameCombo % FEVER_TRIGGER === 0) {
-      gameFever = true;
-      gameFeverTimer = FEVER_TIME;
-      playSFX('fever');
-      showFloatText(GAME_W/2, GAME_H/3, '🔥 FEVER TIME! 🔥', '#f97316');
+    } else {
+      if (gameFever && gameFeverTimer > 0) {
+        gameFeverTimer--;
+        if (gameFeverTimer === 0) { gameFever = false; updateComboUI(); }
+      }
+      if (gameCombo > 0 && gameComboTimer > 0) {
+        gameComboTimer--;
+        if (gameComboTimer === 0) breakCombo();
+      }
     }
-    updateComboUI();
   }
 
   function breakCombo() {
@@ -1782,8 +1784,10 @@ function rectsOverlap(a,b) {
     }
     updateComboUI();
 
-    gameSpawnTimer++;
-    if (gameSpawnTimer >= 18) { gameSpawnItem(); gameSpawnTimer = 0; }
+    if (!gameIntroPhase) {
+      gameSpawnTimer++;
+      if (gameSpawnTimer >= 18) { gameSpawnItem(); gameSpawnTimer = 0; }
+    }
 
     for (let i = gameItems.length-1; i >= 0; i--) {
       const item = gameItems[i];
@@ -1791,7 +1795,7 @@ function rectsOverlap(a,b) {
       item.rot += item.rotSpeed;
       gameDrawItem(gameCtx, item);
       const ib = { x: item.x - item.size/2, y: item.y - item.size/2, w: item.size, h: item.size };
-      if (rectsOverlap(ib, hb)) {
+      if (!gameOver && !gameIntroPhase && rectsOverlap(ib, hb)) {
         gameItems.splice(i, 1);
         const mult = gameFever ? 2 : 1;
         if (item.type === 'diamond') { const pts=10000*mult; gameScore+=pts; addCombo(); playSFX('pick'); showFloatText(item.x, item.y, '+'+pts.toLocaleString()+(gameFever?'🔥':''), '#5de0f5'); }
@@ -1943,72 +1947,93 @@ overlay.innerHTML = `
     }, 1000);
   }
 
-  function triggerGameFinish() {
-    gameRunning = false;
-    if (gameAnimFrame) cancelAnimationFrame(gameAnimFrame);
+  function showResultScreen() {
+    const name = discordUserGame ? (discordUserGame.global_name || discordUserGame.username) : '익명';
+    gameSaveRank(name, gameScore);
     stopBGM();
     playSFX('finish');
 
+    const overlay = document.getElementById('gameOverlay');
+    overlay.style.display = 'flex';
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.8s ease';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.flexDirection = 'column';
+    overlay.style.gap = '0';
+    overlay.style.background = 'rgba(0,0,0,0.72)';
+
+    overlay.innerHTML = `
+      <div style="
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        gap:18px;background:rgba(5,12,7,0.78);border:2px solid rgba(57,255,20,0.45);
+        border-radius:18px;padding:34px 42px;min-width:340px;
+        box-shadow:0 0 35px rgba(57,255,20,0.18),0 8px 40px rgba(0,0,0,0.55);
+        opacity:0;transform:translateY(40px);transition:opacity 0.8s ease,transform 0.8s ease;
+      " id="gameOverCard">
+        <div style="font-family:'Press Start 2P',monospace;font-size:26px;color:#39ff14;text-shadow:0 0 12px rgba(57,255,20,0.8);letter-spacing:2px;text-align:center;">RESULT</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:#f5c518;text-align:center;">점수: ${gameScore.toLocaleString()}</div>
+        <div style="width:100%;background:rgba(0,0,0,0.5);border:2px solid rgba(57,255,20,0.4);border-radius:10px;padding:14px 18px;min-width:250px;">
+          <div style="color:#39ff14;font-family:'Press Start 2P',monospace;font-size:11px;margin-bottom:12px;text-align:center;">🏆 TOP 3</div>
+          <div id="rankListEnd"></div>
+        </div>
+        <button onclick="gameStart()" style="background:#39ff14;border:none;color:#050f05;font-family:'Press Start 2P',monospace;font-size:12px;padding:13px 34px;cursor:pointer;border-radius:6px;box-shadow:0 0 16px rgba(57,255,20,0.4);">다시 시작</button>
+      </div>
+    `;
+
+    document.getElementById('gameHUD').style.display = 'none';
+    const introOverlay = document.getElementById('gameIntroOverlay');
+    if (introOverlay) introOverlay.style.display = 'none';
+    gameUpdateRank();
+
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+      setTimeout(() => {
+        const card = document.getElementById('gameOverCard');
+        if (card) { card.style.opacity = '1'; card.style.transform = 'translateY(0)'; }
+      }, 100);
+    });
+  }
+
+  function triggerGameFinish() {
+    if (gameTimerInterval) clearInterval(gameTimerInterval);
     const timerHUD = document.getElementById('gameTimerHUD');
     if (timerHUD) timerHUD.style.display = 'none';
 
     const introOverlay = document.getElementById('gameIntroOverlay');
     const introText = document.getElementById('gameIntroText');
     introOverlay.style.display = 'flex';
+    introOverlay.style.background = 'rgba(0,0,0,0.35)';
+    introText.style.opacity = '1';
     introText.textContent = 'FINISH !';
     introText.style.color = '#39ff14';
     introText.style.textShadow = '0 0 20px rgba(57,255,20,0.9), 0 0 40px rgba(57,255,20,0.5)';
 
+    // FINISH 후 3초: 게임루프는 계속(아이템 드롭/이동 가능), 상호작용만 차단
+    gameOver = true; // 충돌 판정 차단
+
     setTimeout(() => {
+      // 게임루프 정지 후 결과 화면
+      gameRunning = false;
+      if (gameAnimFrame) cancelAnimationFrame(gameAnimFrame);
       introOverlay.style.display = 'none';
-      const name = discordUserGame ? (discordUserGame.global_name || discordUserGame.username) : '익명';
-      gameSaveRank(name, gameScore);
-
-      const overlay = document.getElementById('gameOverlay');
-      overlay.style.display = 'flex';
-      overlay.style.opacity = '0';
-      overlay.style.transition = 'opacity 0.8s ease';
-      overlay.style.alignItems = 'center';
-      overlay.style.justifyContent = 'center';
-      overlay.style.flexDirection = 'column';
-      overlay.style.gap = '0';
-      overlay.style.background = 'rgba(0,0,0,0.72)';
-
-      overlay.innerHTML = `
-        <div style="
-          display:flex;flex-direction:column;align-items:center;justify-content:center;
-          gap:18px;background:rgba(5,12,7,0.78);border:2px solid rgba(57,255,20,0.45);
-          border-radius:18px;padding:34px 42px;min-width:340px;
-          box-shadow:0 0 35px rgba(57,255,20,0.18),0 8px 40px rgba(0,0,0,0.55);
-          opacity:0;transform:translateY(40px);transition:opacity 0.8s ease,transform 0.8s ease;
-        " id="gameOverCard">
-          <div style="font-family:'Press Start 2P',monospace;font-size:26px;color:#39ff14;text-shadow:0 0 12px rgba(57,255,20,0.8);letter-spacing:2px;text-align:center;">RESULT</div>
-          <div style="font-family:'Press Start 2P',monospace;font-size:14px;color:#f5c518;text-align:center;">점수: ${gameScore.toLocaleString()}</div>
-          <div style="width:100%;background:rgba(0,0,0,0.5);border:2px solid rgba(57,255,20,0.4);border-radius:10px;padding:14px 18px;min-width:250px;">
-            <div style="color:#39ff14;font-family:'Press Start 2P',monospace;font-size:11px;margin-bottom:12px;text-align:center;">🏆 TOP 3</div>
-            <div id="rankListEnd"></div>
-          </div>
-          <button onclick="gameStart()" style="background:#39ff14;border:none;color:#050f05;font-family:'Press Start 2P',monospace;font-size:12px;padding:13px 34px;cursor:pointer;border-radius:6px;box-shadow:0 0 16px rgba(57,255,20,0.4);">다시 시작</button>
-        </div>
-      `;
-
-      document.getElementById('gameHUD').style.display = 'none';
-      gameUpdateRank();
-
-      requestAnimationFrame(() => {
-        overlay.style.opacity = '1';
-        setTimeout(() => {
-          const card = document.getElementById('gameOverCard');
-          if (card) { card.style.opacity = '1'; card.style.transform = 'translateY(0)'; }
-        }, 100);
-      });
-    }, 2500);
+      showResultScreen();
+    }, 3000);
   }
 
   async function runGameIntro() {
     const introOverlay = document.getElementById('gameIntroOverlay');
     const introText = document.getElementById('gameIntroText');
+
+    // 인트로 동안 게임루프 실행 (캐릭터 조작 가능, 아이템 드롭 차단)
+    gameIntroPhase = true;
+    gameRunning = true;
+    if (gameAnimFrame) cancelAnimationFrame(gameAnimFrame);
+    gameLoop();
+
     introOverlay.style.display = 'flex';
+    introOverlay.style.background = 'rgba(0,0,0,0.45)';
+    introText.style.opacity = '1';
 
     const show = (text, color = '#fff', shadow = '0 0 20px rgba(255,255,255,0.8)') => {
       introText.textContent = text;
@@ -2026,14 +2051,19 @@ overlay.innerHTML = `
     await wait(330);
     show('1', '#f5c518', '0 0 30px rgba(245,197,24,0.9)');
     await wait(300);
-    show('START !', '#39ff14', '0 0 20px rgba(57,255,20,0.9), 0 0 40px rgba(57,255,20,0.5)');
-    await wait(600);
 
-    introOverlay.style.display = 'none';
-    gameRunning = true;
+    // START - 배경 밝아지고 게임 시작
+    introOverlay.style.background = 'rgba(0,0,0,0)';
+    show('START !', '#39ff14', '0 0 20px rgba(57,255,20,0.9), 0 0 40px rgba(57,255,20,0.5)');
+    gameIntroPhase = false; // 아이템 드롭 시작
     startGameTimer();
-    if (gameAnimFrame) cancelAnimationFrame(gameAnimFrame);
-    gameLoop();
+
+    // START 페이드아웃
+    await wait(300);
+    introText.style.opacity = '0';
+    await wait(800);
+    introOverlay.style.display = 'none';
+    introText.style.opacity = '1';
   }
 
   window.gameStart = async function() {
