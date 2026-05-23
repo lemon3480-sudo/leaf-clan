@@ -277,6 +277,73 @@
     @keyframes floatUp { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-80px)} }
     .combo-pulse { animation: comboPulse 1s infinite; }
     .float-text { animation: floatUp 1.2s ease-out forwards; position:absolute; pointer-events:none; font-weight:700; font-size:18px; z-index:99; }
+
+@keyframes feverBannerMove {
+  0% {
+    opacity: 0;
+    transform: translate(-58%, -50%) scale(0.92);
+    filter: blur(2px);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-51%, -50%) scale(1.04);
+    filter: blur(0);
+  }
+  62% {
+    opacity: 1;
+    transform: translate(-48%, -50%) scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-38%, -50%) scale(0.96);
+    filter: blur(2px);
+  }
+}
+
+.fever-banner {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 999;
+  pointer-events: none;
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(42px, 6vw, 96px);
+  font-weight: 900;
+  color: #ff2b1f;
+  letter-spacing: 8px;
+  text-align: center;
+  text-shadow:
+    4px 4px 0 #5a0500,
+    -3px 3px 0 #5a0500,
+    3px -3px 0 #5a0500,
+    0 0 12px rgba(255,60,20,0.95),
+    0 0 28px rgba(255,120,0,0.75),
+    0 0 48px rgba(249,115,22,0.45);
+  animation: feverBannerMove 1.15s ease-out forwards;
+}
+
+.fever-banner::before,
+.fever-banner::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 90px;
+  height: 8px;
+  background: linear-gradient(90deg, transparent, #ff4d00, #ffd166);
+  image-rendering: pixelated;
+  box-shadow: 0 0 16px rgba(255,90,0,0.8);
+}
+
+.fever-banner::before {
+  right: calc(100% + 24px);
+  transform: translateY(-50%);
+}
+
+.fever-banner::after {
+  left: calc(100% + 24px);
+  transform: translateY(-50%) scaleX(-1);
+}
     .key-cap { display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-bottom:3px solid rgba(255,255,255,0.15);border-radius:6px;padding:6px 10px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);font-family:'Noto Sans KR',sans-serif;transition:all 0.1s;min-width:36px;text-align:center; }
     .key-cap.active { background:rgba(57,255,20,0.2);border-color:rgba(57,255,20,0.5);border-bottom-color:rgba(57,255,20,0.3);color:#39ff14;box-shadow:0 0 8px rgba(57,255,20,0.3); }
 
@@ -1288,7 +1355,22 @@ window.showPage = function(page, el) {
     setTimeout(() => el.remove(), 1200);
   }
 
-  function updateComboUI() {
+  function showFeverBanner() {
+  const oldBanner = document.querySelector('.fever-banner');
+  if (oldBanner) oldBanner.remove();
+
+  const banner = document.createElement('div');
+  banner.className = 'fever-banner';
+  banner.textContent = 'FEVER !';
+
+  document.body.appendChild(banner);
+
+  setTimeout(() => {
+    banner.remove();
+  }, 1200);
+}
+
+function updateComboUI() {
     const isMax = gameCombo > 99;
     const comboCount = document.getElementById('comboCount');
     const comboLabel = document.getElementById('comboLabel');
@@ -1353,10 +1435,6 @@ window.showPage = function(page, el) {
       gameFever = true;
       gameFeverTimer = FEVER_TIME;
     } else if (gameCombo % FEVER_TRIGGER === 0) {
-      gameFever = true;
-      gameFeverTimer = FEVER_TIME;
-      showFloatText(GAME_W / 2, GAME_H / 3, '🔥 FEVER TIME! 🔥', '#f97316');
-    }
 
     updateComboUI();
   }
