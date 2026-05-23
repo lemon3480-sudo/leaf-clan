@@ -1315,7 +1315,7 @@ const LIGHTNING_LINGER_TIME = 0.3;
 const LIGHTNING_STUN_FRAMES = 90; // 약 1.5초
 
 const PILLAGER_SHOT_SIDE_INTERVAL = 0.65; // 좌우 번갈아 발사. 한 마리 기준 1.3초
-const PILLAGER_ARROW_GRAVITY = 0.22;
+const PILLAGER_ARROW_GRAVITY = 0.17;
 const PILLAGER_ARROW_DAMAGE = 1;
 
 let gameActiveChorus = null;
@@ -1717,27 +1717,30 @@ function drawPillagers(ctx) {
 
 function spawnPillagerVolley(side) {
   const fromLeft = side === 'left';
-  const startX = fromLeft ? 85 : GAME_W - 85;
-  const startY = GROUND_Y - 185;
 
-  const baseVx = fromLeft ? 5.0 : -5.0;
+  // 약탈자가 들고 있는 쇠뇌 위치쯤에서 발사
+  const startX = fromLeft ? 110 : GAME_W - 110;
+  const startY = GROUND_Y - 165 + (Math.random() - 0.5) * 28;
 
-  // 3발씩 약간 다른 각도로 발사
-  const shots = [
-    { vx: baseVx * 0.96, vy: -8.2 },
-    { vx: baseVx * 1.06, vy: -7.4 },
-    { vx: baseVx * 0.88, vy: -6.7 }
-  ];
+  for (let i = 0; i < 3; i++) {
+    // 화살마다 거리/높이/속도 랜덤
+    const horizontalSpeed = 7.4 + Math.random() * 3.2;   // 7.4 ~ 10.6
+    const verticalPower = 5.2 + Math.random() * 5.0;      // 5.2 ~ 10.2
+    const spreadY = (Math.random() - 0.5) * 2.4;          // 위아래 흔들림
+    const delayOffset = i * 0.15;
 
-  for (const s of shots) {
+    const vx = fromLeft ? horizontalSpeed : -horizontalSpeed;
+    const vy = -(verticalPower + spreadY);
+
     gamePillagerArrows.push({
-      x: startX,
-      y: startY,
-      vx: s.vx,
-      vy: s.vy,
-      size: 42,
+      x: startX + (fromLeft ? -i * 6 : i * 6),
+      y: startY + (Math.random() - 0.5) * 22,
+      vx,
+      vy,
+      size: 42 + Math.random() * 8,
       fromLeft,
-      hit: false
+      hit: false,
+      delay: delayOffset
     });
   }
 }
@@ -1770,11 +1773,16 @@ function updateAndDrawPillagerArrows(ctx, hb) {
   for (let i = gamePillagerArrows.length - 1; i >= 0; i--) {
     const a = gamePillagerArrows[i];
 
-    a.x += a.vx * getGameplaySpeedMult();
-    a.y += a.vy * getGameplaySpeedMult();
-    a.vy += PILLAGER_ARROW_GRAVITY * getGameplaySpeedMult();
+if (a.delay && a.delay > 0) {
+  a.delay -= 1 / 60;
+  continue;
+}
 
-    drawPillagerArrow(ctx, a);
+a.x += a.vx * getGameplaySpeedMult();
+a.y += a.vy * getGameplaySpeedMult();
+a.vy += PILLAGER_ARROW_GRAVITY * getGameplaySpeedMult();
+
+drawPillagerArrow(ctx, a);
 
     const box = {
       x: a.x - 14,
