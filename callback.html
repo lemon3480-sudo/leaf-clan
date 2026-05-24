@@ -21,7 +21,7 @@
 
     if (!code) {
       alert('로그인 실패! 다시 시도해주세요.');
-      window.location.href = '/leaf-clan/';
+      window.location.href = 'https://teamleaf.xyz/';
     } else {
       fetch('https://worker-production-cff5.up.railway.app/auth/callback', {
         method: 'POST',
@@ -32,11 +32,11 @@
       .then(user => {
         if (user.error) throw new Error(user.error);
         localStorage.setItem('discord_user', JSON.stringify(user));
-        window.location.href = '/leaf-clan/';
+        window.location.href = 'https://teamleaf.xyz/';
       })
       .catch(err => {
         alert('로그인 실패: ' + err.message);
-        window.location.href = '/leaf-clan/';
+        window.location.href = 'https://teamleaf.xyz/';
       });
     }
   </script>
