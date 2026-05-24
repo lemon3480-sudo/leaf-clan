@@ -879,6 +879,25 @@ window.showPage = function(page, el) {
     }
   }
 
+  function checkPostHash() {
+    const hash = window.location.hash;
+    if (!hash.startsWith('#post-')) return;
+    const postId = hash.replace('#post-', '');
+    const tryOpen = () => {
+      const post = allPosts.find(p => p.id === postId);
+      if (post) {
+        showPage('board', document.querySelector('.nav-links a:nth-child(4)'));
+        openPostModal(postId);
+        window.location.hash = '';
+      } else {
+        setTimeout(tryOpen, 500);
+      }
+    };
+    tryOpen();
+  }
+
+  checkPostHash();
+
   window.discordLogin = function() {
     const url = 'https://discord.com/oauth2/authorize'
       + '?client_id=' + DISCORD_CLIENT_ID
@@ -1167,7 +1186,7 @@ window.showPage = function(page, el) {
   }
 
   window.sharePost = function(postId) {
-    navigator.clipboard.writeText(window.location.href.split('#')[0] + '#post-' + postId)
+    navigator.clipboard.writeText('https://teamleaf.xyz/#post-' + postId)
       .then(() => alert('링크가 복사됐어요!'));
   }
 
@@ -1562,6 +1581,7 @@ const SFX = {
   gameover: new Audio(BASE + 'death.ogg'),
   fever:    new Audio(BASE + 'blazehit1.ogg'),
 illager:  new Audio(BASE + 'illager.ogg'),
+wskull:   new Audio(BASE + 'wskull.ogg'),
 shoot:    [
   new Audio(BASE + 'shoot1.ogg'),
   new Audio(BASE + 'shoot2.ogg'),
@@ -1600,7 +1620,32 @@ SFX.explode.forEach(s => {
   s.volume = 0.32;
 });
 
-  function playBGM() { SFX.bgm.currentTime = 0; SFX.bgm.play().catch(()=>{}); }
+// 위더 해골 발사음은 너무 크지 않게
+SFX.wskull.volume = 0.38;
+
+// 기본 쇠뇌/번개 사운드 볼륨
+SFX.shoot.forEach(s => {
+  s.volume = 0.55;
+});
+
+SFX.thunder.forEach(s => {
+  s.volume = 0.65;
+});
+
+  function playRandomAudioWithVolume(list, volume) {
+  const s = list[Math.floor(Math.random() * list.length)];
+  const oldVolume = s.volume;
+
+  s.volume = volume;
+  s.currentTime = 0;
+  s.play().catch(() => {});
+
+  setTimeout(() => {
+    s.volume = oldVolume;
+  }, 800);
+}
+
+function playBGM() { SFX.bgm.currentTime = 0; SFX.bgm.play().catch(()=>{}); }
   function stopBGM() { SFX.bgm.pause(); SFX.bgm.currentTime = 0; }
  function playSFX(key) {
   if (key === 'explode') {
@@ -1886,9 +1931,14 @@ function drawLightningStrike(ctx, bolt, now) {
   const alpha = Math.min(1, remain / LIGHTNING_LINGER_TIME);
 
   if (!bolt.thunderPlayed) {
-    bolt.thunderPlayed = true;
+  bolt.thunderPlayed = true;
+
+  if (isHyperChorusActive()) {
+    playRandomAudioWithVolume(SFX.thunder, 0.45);
+  } else {
     playSFX('thunder');
   }
+}
 
   damagePlayerByLightning(bolt);
 
@@ -1987,7 +2037,11 @@ function spawnPillagerVolley(side) {
   const startX = fromLeft ? 110 : GAME_W - 110;
   const startY = GROUND_Y - 165 + (Math.random() - 0.5) * 28;
 
+ if (isHyperChorusActive()) {
+  playRandomAudioWithVolume(SFX.shoot, 0.38);
+} else {
   playSFX('shoot');
+}
 
   for (let i = 0; i < 3; i++) {
     let horizontalSpeed = 7.4 + Math.random() * 3.2;
@@ -2162,6 +2216,9 @@ function spawnWitherSkull(w, now) {
     groundX = startX + vx * t;
   }
   groundX = Math.max(30, Math.min(GAME_W - 30, groundX));
+
+SFX.wskull.currentTime = 0;
+SFX.wskull.play().catch(() => {});
 
 gameWitherSkulls.push({
   x: startX,
