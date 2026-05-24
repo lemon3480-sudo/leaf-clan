@@ -552,7 +552,8 @@
                 <button class="nick-toggle-btn" id="btn-real" onclick="setNickMode('real')">🎮 내 아이디</button>
               </div>
               <div class="board-login-notice" id="board-login-notice"></div>
-              <textarea class="board-textarea" id="boardInput" placeholder="글을 작성하세요..."></textarea>
+              <input class="comment-input" id="boardTitle" placeholder="제목을 입력하세요..." style="width:100%;margin-bottom:8px;padding:10px 14px;font-size:14px;border-radius:10px;background:rgba(57,255,20,0.05);border:1px solid #39ff14;color:#eee;font-family:'Noto Sans KR',sans-serif;outline:none;">
+              <textarea class="board-textarea" id="boardInput" placeholder="내용을 작성하세요..."></textarea>
               <div class="board-input-footer">
                 <button class="board-submit" onclick="submitPost()">
                   ✈ 게시하기
@@ -1123,6 +1124,7 @@ window.showPage = function(page, el) {
         + '<span class="post-nick">' + (p.nick || '익명').replace(/</g,'&lt;') + '</span>'
         + '<span class="post-date">' + formatDate(p.createdAt) + '</span>'
         + '</div>'
+        + (p.title ? '<div style="font-size:15px;font-weight:700;color:#eee;margin-bottom:6px;padding-left:48px;">' + p.title.replace(/</g,'&lt;') + '</div>' : '')
         + '<div class="board-post-text">' + (p.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
         + '<div class="board-post-actions">'
         + '<button class="action-btn' + (p.liked ? ' liked' : '') + '" onclick="toggleLike(\'' + p.id + '\', this)">❤️ ' + (p.likes || 0) + '</button>'
@@ -1237,8 +1239,9 @@ window.showPage = function(page, el) {
   });
 
   window.submitPost = async function() {
+    const title = document.getElementById('boardTitle').value.trim();
     const text = document.getElementById('boardInput').value.trim();
-    if (!text) return;
+    if (!title || !text) return;
     const discordUser = JSON.parse(localStorage.getItem('discord_user') || 'null');
     if (!discordUser) return;
     const isAnon = nickMode === 'anon';
@@ -1250,7 +1253,7 @@ window.showPage = function(page, el) {
       const res = await fetch('https://worker-production-cff5.up.railway.app/board-post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nick, text, isAnon })
+        body: JSON.stringify({ nick, title, text, isAnon })
       });
       const data = await res.json();
       if (data.ok) threadId = data.threadId;
@@ -1259,7 +1262,7 @@ window.showPage = function(page, el) {
     }
 
     await addDoc(collection(db, "posts"), {
-      nick, text, likes: 0, avatar,
+      nick, title, text, likes: 0, avatar,
       threadId,
       realNick: discordUser.global_name || discordUser.username,
       realAvatar: discordUser.avatar,
@@ -1267,6 +1270,7 @@ window.showPage = function(page, el) {
       isAnon,
       createdAt: serverTimestamp()
     });
+    document.getElementById('boardTitle').value = '';
     document.getElementById('boardInput').value = '';
   }
 
@@ -1322,6 +1326,8 @@ window.showPage = function(page, el) {
 
     document.getElementById('postModal-nick').textContent = post.nick || '익명';
     document.getElementById('postModal-date').textContent = formatDate(post.createdAt);
+    const titleEl = document.getElementById('postModal-title');
+    if (titleEl) titleEl.textContent = post.title || '';
     document.getElementById('postModal-text').textContent = post.text || '';
 
     const likeBtn = document.getElementById('postModal-likeBtn');
@@ -3673,6 +3679,7 @@ gameTimeLeft = GAME_DURATION;
       </div>
     </div>
     <div class="modal-body">
+      <div id="postModal-title" style="font-size:18px;font-weight:700;color:#eee;margin-bottom:10px;"></div>
       <div id="postModal-text" style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.9;margin-bottom:24px;white-space:pre-wrap;word-break:break-word;"></div>
       <div style="display:flex;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08);">
         <button id="postModal-likeBtn" class="action-btn" onclick="togglePostModalLike()">❤️ 0</button>
