@@ -1126,6 +1126,7 @@ window.showPage = function(page, el) {
         + '</div>'
         + (p.title ? '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;padding-left:48px;letter-spacing:0.3px;">' + p.title.replace(/</g,'&lt;') + '</div>' : '')
         + '<div class="board-post-text">' + (p.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
+        + (p.images && p.images.length > 0 ? '<div style="padding-left:48px;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">' + p.images.map(img => '<img src="' + img + '" style="max-width:200px;max-height:200px;border-radius:8px;object-fit:cover;cursor:pointer;border:1px solid rgba(255,255,255,0.1);" onclick="window.open(\'' + img + '\',\'_blank\')">').join('') + '</div>' : '')
         + '<div class="board-post-actions">'
         + '<button class="action-btn' + (p.liked ? ' liked' : '') + '" onclick="toggleLike(\'' + p.id + '\', this)">❤️ ' + (p.likes || 0) + '</button>'
         + '<button class="action-btn" onclick="openPostModal(\'' + p.id + '\')">💬 <span id="commentCount-' + p.id + '">0</span></button>'
@@ -1170,13 +1171,17 @@ window.showPage = function(page, el) {
         const avatarHtml = c.avatar
           ? '<div class="comment-avatar"><img src="' + c.avatar + '" alt=""></div>'
           : '<div class="comment-avatar">?</div>';
-        clist.innerHTML += '<div class="comment-item">'
-          + avatarHtml
-          + '<div class="comment-body">'
-          + '<span class="comment-nick-text">' + (c.nick||'익명').replace(/</g,'&lt;') + '</span>'
-          + '<span class="comment-text">' + (c.text||'').replace(/</g,'&lt;') + '</span>'
-          + '<div class="comment-date">' + formatDate(c.createdAt) + '</div>'
-          + '</div></div>';
+        const commentImagesHtml = (c.images && c.images.length > 0)
+            ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">' + c.images.map(img => '<img src="' + img + '" style="max-width:160px;max-height:160px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid rgba(255,255,255,0.1);" onclick="window.open(\'' + img + '\',\'_blank\')">').join('') + '</div>'
+            : '';
+          clist.innerHTML += '<div class="comment-item">'
+            + avatarHtml
+            + '<div class="comment-body">'
+            + '<span class="comment-nick-text">' + (c.nick||'익명').replace(/</g,'&lt;') + '</span>'
+            + '<span class="comment-text">' + (c.text||'').replace(/</g,'&lt;') + '</span>'
+            + commentImagesHtml
+            + '<div class="comment-date">' + formatDate(c.createdAt) + '</div>'
+            + '</div></div>';
       });
     });
   }
@@ -1329,6 +1334,15 @@ window.showPage = function(page, el) {
     const titleEl = document.getElementById('postModal-title');
     if (titleEl) titleEl.textContent = post.title || '';
     document.getElementById('postModal-text').textContent = post.text || '';
+    const imagesEl = document.getElementById('postModal-images');
+    if (imagesEl) {
+      if (post.images && post.images.length > 0) {
+        imagesEl.innerHTML = post.images.map(img => '<img src="' + img + '" style="max-width:100%;max-height:400px;border-radius:10px;object-fit:contain;cursor:pointer;border:1px solid rgba(255,255,255,0.1);margin-bottom:8px;" onclick="window.open(\'' + img + '\',\'_blank\')">').join('');
+        imagesEl.style.display = 'block';
+      } else {
+        imagesEl.style.display = 'none';
+      }
+    }
 
     const likeBtn = document.getElementById('postModal-likeBtn');
     likeBtn.textContent = '❤️ ' + (post.likes || 0);
@@ -3680,7 +3694,8 @@ gameTimeLeft = GAME_DURATION;
     </div>
     <div class="modal-body">
       <div id="postModal-title" style="font-size:18px;font-weight:700;color:#eee;margin-bottom:10px;"></div>
-      <div id="postModal-text" style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.9;margin-bottom:24px;white-space:pre-wrap;word-break:break-word;"></div>
+      <div id="postModal-text" style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.9;margin-bottom:16px;white-space:pre-wrap;word-break:break-word;"></div>
+      <div id="postModal-images" style="display:none;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
       <div style="display:flex;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08);">
         <button id="postModal-likeBtn" class="action-btn" onclick="togglePostModalLike()">❤️ 0</button>
       </div>
