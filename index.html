@@ -232,7 +232,7 @@
     .board-submit:hover { background: #5fff35; box-shadow: 0 0 24px rgba(57,255,20,0.6); }
 
     .board-post { background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin-bottom: 14px; transition: border-color 0.2s, box-shadow 0.2s; }
-    .board-post:hover { border-color: rgba(255,255,255,0.2); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .board-post:hover { border-color: rgba(57,255,20,0.4); box-shadow: 0 0 16px rgba(57,255,20,0.15), 0 4px 20px rgba(0,0,0,0.3); }
     .board-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .post-avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; color: rgba(255,255,255,0.4); }
     .post-avatar-img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0; }
@@ -507,8 +507,8 @@
 
   <div id="page-intro" class="page">
     <div class="page-hero">
-      <h2>MEMBERS</h2>
-      <p>Meet the elites of Team LEAF.</p>
+      <h2>INTRODUCTION</h2>
+      <p>Leaf 팀원들의 자기소개</p>
     </div>
     <div class="intro-section">
       <div class="intro-grid" id="introGrid">
@@ -1089,6 +1089,11 @@ window.showPage = function(page, el) {
         : '<div class="post-avatar">?</div>';
       const discordUser = JSON.parse(localStorage.getItem('discord_user') || 'null');
       const canComment = !!discordUser;
+      div.style.cursor = 'pointer';
+      div.onclick = (e) => {
+        if (e.target.closest('.action-btn')) return;
+        openPostModal(p.id);
+      };
       div.innerHTML =
         '<div class="board-post-header">'
         + avatarHtml
@@ -1098,7 +1103,7 @@ window.showPage = function(page, el) {
         + '<div class="board-post-text">' + (p.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
         + '<div class="board-post-actions">'
         + '<button class="action-btn' + (p.liked ? ' liked' : '') + '" onclick="toggleLike(\'' + p.id + '\', this)">❤️ ' + (p.likes || 0) + '</button>'
-        + '<button class="action-btn" onclick="toggleComment(\'' + p.id + '\')">💬 댓글</button>'
+        + '<button class="action-btn" onclick="openPostModal(\'' + p.id + '\')">💬 <span id="commentCount-' + p.id + '">0</span></button>'
         + '<button class="action-btn" onclick="sharePost(\'' + p.id + '\')">🔗 공유</button>'
         + '</div>'
         + '<div class="comment-wrap" id="comments-' + p.id + '">'
@@ -1129,9 +1134,11 @@ window.showPage = function(page, el) {
   }
 
   async function loadComments(postId) {
-    const clist = document.getElementById('clist-' + postId);
-    if (!clist) return;
     onSnapshot(query(collection(db, 'posts', postId, 'comments'), orderBy('createdAt', 'asc')), snap => {
+      const countEl = document.getElementById('commentCount-' + postId);
+      if (countEl) countEl.textContent = snap.size;
+      const clist = document.getElementById('clist-' + postId);
+      if (!clist) return;
       clist.innerHTML = '';
       snap.forEach(d => {
         const c = d.data();
@@ -1243,6 +1250,119 @@ window.showPage = function(page, el) {
 
   let currentIntroId = null;
   let introCommentMode = 'anon';
+
+  let currentPostId = null;
+  let postCommentMode = 'anon';
+  let postModalCommentUnsubscribe = null;
+  let postModalLiked = false;
+
+  window.setPostCommentMode = function(mode) {
+    postCommentMode = mode;
+    document.getElementById('postModal-btnAnon').classList.toggle('active', mode === 'anon');
+    document.getElementById('postModal-btnReal').classList.toggle('active', mode === 'real');
+  }
+
+  window.openPostModal = function(postId) {
+    const post = allPosts.find(p => p.id === postId);
+    if (!post) return;
+    currentPostId = postId;
+    postModalLiked = !!post.liked;
+
+    const avatarEl = document.getElementById('postModal-avatar');
+    if (post.avatar) {
+      avatarEl.innerHTML = '<img src="' + post.avatar + '" style="width:100%;height:100%;object-fit:cover;" alt="">';
+    } else {
+      avatarEl.innerHTML = '?';
+    }
+
+    document.getElementById('postModal-nick').textContent = post.nick || '익명';
+    document.getElementById('postModal-date').textContent = formatDate(post.createdAt);
+    document.getElementById('postModal-text').textContent = post.text || '';
+
+    const likeBtn = document.getElementById('postModal-likeBtn');
+    likeBtn.textContent = '❤️ ' + (post.likes || 0);
+    likeBtn.classList.toggle('liked', postModalLiked);
+
+    const discordUser = JSON.parse(localStorage.getItem('discord_user') || 'null');
+    document.getElementById('postModal-loginNotice').style.display = discordUser ? 'block' : 'none';
+    document.getElementById('postModal-needLogin').style.display = discordUser ? 'none' : 'block';
+
+    document.getElementById('postModal').classList.add('active');
+    loadPostModalComments(postId);
+  }
+
+  window.closePostModal = function(e) {
+    if (!e || e.target === document.getElementById('postModal')) {
+      document.getElementById('postModal').classList.remove('active');
+      if (postModalCommentUnsubscribe) { postModalCommentUnsubscribe(); postModalCommentUnsubscribe = null; }
+      currentPostId = null;
+    }
+  }
+
+  window.togglePostModalLike = async function() {
+    if (!currentPostId) return;
+    const liked = postModalLiked;
+    await updateDoc(doc(db, 'posts', currentPostId), { likes: increment(liked ? -1 : 1) });
+    postModalLiked = !liked;
+    const post = allPosts.find(p => p.id === currentPostId);
+    if (post) {
+      post.likes = (post.likes || 0) + (liked ? -1 : 1);
+      post.liked = postModalLiked;
+    }
+    const likeBtn = document.getElementById('postModal-likeBtn');
+    if (likeBtn) {
+      likeBtn.textContent = '❤️ ' + ((post?.likes) || 0);
+      likeBtn.classList.toggle('liked', postModalLiked);
+    }
+  }
+
+  function loadPostModalComments(postId) {
+    const clist = document.getElementById('postModal-clist');
+    clist.innerHTML = '';
+    if (postModalCommentUnsubscribe) { postModalCommentUnsubscribe(); postModalCommentUnsubscribe = null; }
+    postModalCommentUnsubscribe = onSnapshot(
+      query(collection(db, 'posts', postId, 'comments'), orderBy('createdAt', 'asc')),
+      snap => {
+        clist.innerHTML = '';
+        if (snap.empty) {
+          clist.innerHTML = '<div style="font-size:12px;color:rgba(255,255,255,0.25);text-align:center;padding:16px 0;">아직 댓글이 없어요</div>';
+          return;
+        }
+        snap.forEach(d => {
+          const c = d.data();
+          const avatarHtml = c.avatar
+            ? '<div class="comment-avatar"><img src="' + c.avatar + '" alt=""></div>'
+            : '<div class="comment-avatar">?</div>';
+          clist.innerHTML += '<div class="comment-item">'
+            + avatarHtml
+            + '<div class="comment-body">'
+            + '<span class="comment-nick-text">' + (c.nick||'익명').replace(/</g,'&lt;') + '</span>'
+            + '<span class="comment-text">' + (c.text||'').replace(/</g,'&lt;') + '</span>'
+            + '<div class="comment-date">' + formatDate(c.createdAt) + '</div>'
+            + '</div></div>';
+        });
+      }
+    );
+  }
+
+  window.submitPostModalComment = async function() {
+    if (!currentPostId) return;
+    const discordUser = JSON.parse(localStorage.getItem('discord_user') || 'null');
+    if (!discordUser) return;
+    const text = document.getElementById('postModal-cinput').value.trim();
+    if (!text) return;
+    const isAnon = postCommentMode === 'anon';
+    const nick = isAnon ? '익명' : (discordUser.global_name || discordUser.username);
+    const avatar = isAnon ? null : discordUser.avatar;
+    await addDoc(collection(db, 'posts', currentPostId, 'comments'), {
+      nick, text, avatar,
+      realNick: discordUser.global_name || discordUser.username,
+      discordId: discordUser.id,
+      isAnon,
+      createdAt: serverTimestamp()
+    });
+    document.getElementById('postModal-cinput').value = '';
+  }
 
   window.setIntroCommentMode = function(mode) {
     introCommentMode = mode;
@@ -1417,6 +1537,7 @@ let gameNextPillagerSide = 'left';
 
 let gameWithers = [];
 let gameWitherSkulls = [];
+let gameNextWitherShotAt = 0;
 let gameWitherDotTicks = 0;
 let gameWitherDotTimer = 0;
 
@@ -1440,12 +1561,18 @@ const SFX = {
   hit:      new Audio(BASE + 'hit1.ogg'),
   gameover: new Audio(BASE + 'death.ogg'),
   fever:    new Audio(BASE + 'blazehit1.ogg'),
-  thunder:  [
-    new Audio(BASE + 'thunder1.mp3'),
-    new Audio(BASE + 'thunder2.mp3'),
-    new Audio(BASE + 'thunder3.mp3'),
-  ],
-  explode:  [
+illager:  new Audio(BASE + 'illager.ogg'),
+shoot:    [
+  new Audio(BASE + 'shoot1.ogg'),
+  new Audio(BASE + 'shoot2.ogg'),
+  new Audio(BASE + 'shoot3.ogg'),
+],
+thunder:  [
+  new Audio(BASE + 'thunder1.mp3'),
+  new Audio(BASE + 'thunder2.mp3'),
+  new Audio(BASE + 'thunder3.mp3'),
+],
+explode:  [
     new Audio(BASE + 'explode1.ogg'),
     new Audio(BASE + 'explode2.ogg'),
     new Audio(BASE + 'explode3.ogg'),
@@ -1475,13 +1602,17 @@ SFX.explode.forEach(s => {
 
   function playBGM() { SFX.bgm.currentTime = 0; SFX.bgm.play().catch(()=>{}); }
   function stopBGM() { SFX.bgm.pause(); SFX.bgm.currentTime = 0; }
-  function playSFX(key) {
+ function playSFX(key) {
   if (key === 'explode') {
     const s = SFX.explode[Math.floor(Math.random() * SFX.explode.length)];
     s.currentTime = 0;
     s.play().catch(()=>{});
   } else if (key === 'thunder') {
     const s = SFX.thunder[Math.floor(Math.random() * SFX.thunder.length)];
+    s.currentTime = 0;
+    s.play().catch(()=>{});
+  } else if (key === 'shoot') {
+    const s = SFX.shoot[Math.floor(Math.random() * SFX.shoot.length)];
     s.currentTime = 0;
     s.play().catch(()=>{});
   } else {
@@ -1593,11 +1724,15 @@ function updateChorusEvent() {
 
     playSFX('fever');
 
-    if (activeEvent.hyper) {
-      showHyperFeverBanner();
-      initWithers(now);
-      showFloatText(GAME_W / 2, GAME_H / 3 + 90, 'WITHER RAID!', '#c084fc');
-    } else {
+if (activeEvent.pillagers) {
+  playSFX('illager');
+}
+
+if (activeEvent.hyper) {
+  showHyperFeverBanner();
+  initWithers(now);
+  showFloatText(GAME_W / 2, GAME_H / 3 + 90, 'WITHER RAID!', '#c084fc');
+} else {
       showFeverBanner();
       showFloatText(
         GAME_W / 2,
@@ -1852,6 +1987,8 @@ function spawnPillagerVolley(side) {
   const startX = fromLeft ? 110 : GAME_W - 110;
   const startY = GROUND_Y - 165 + (Math.random() - 0.5) * 28;
 
+  playSFX('shoot');
+
   for (let i = 0; i < 3; i++) {
     let horizontalSpeed = 7.4 + Math.random() * 3.2;
     let verticalPower = 5.2 + Math.random() * 5.0;
@@ -1862,20 +1999,20 @@ function spawnPillagerVolley(side) {
     }
 
     const spreadY = (Math.random() - 0.5) * 2.4;
-    const delayOffset = i * 0.15;
+    const spreadX = (Math.random() - 0.5) * 16;
 
     const vx = fromLeft ? horizontalSpeed : -horizontalSpeed;
     const vy = -(verticalPower + spreadY);
 
     gamePillagerArrows.push({
-      x: startX + (fromLeft ? -i * 6 : i * 6),
-      y: startY + (Math.random() - 0.5) * 22,
+      x: startX + spreadX,
+      y: startY + (Math.random() - 0.5) * 26,
       vx,
       vy,
       size: hyper ? 46 + Math.random() * 8 : 42 + Math.random() * 8,
       fromLeft,
       hit: false,
-      delay: delayOffset,
+      delay: 0,
       hyper
     });
   }
@@ -1908,11 +2045,6 @@ function drawPillagerArrow(ctx, a) {
 function updateAndDrawPillagerArrows(ctx, hb) {
   for (let i = gamePillagerArrows.length - 1; i >= 0; i--) {
     const a = gamePillagerArrows[i];
-
-if (a.delay && a.delay > 0) {
-  a.delay -= 1 / 60;
-  continue;
-}
 
 a.x += a.vx * getGameplaySpeedMult();
 a.y += a.vy * getGameplaySpeedMult();
@@ -1955,7 +2087,6 @@ function initWithers(now) {
       vy: 1.2,
       w: 210,
       h: 150,
-      nextShotAt: now + 0.75,
       nextDirChangeAt: now + 0.9
     },
     {
@@ -1965,12 +2096,12 @@ function initWithers(now) {
       vy: -1.0,
       w: 210,
       h: 150,
-      nextShotAt: now + 1.35,
       nextDirChangeAt: now + 1.15
     }
   ];
 
   gameWitherSkulls = [];
+  gameNextWitherShotAt = now + 0.9;
 }
 
 function randomizeWitherDirection(w, now) {
@@ -2032,18 +2163,16 @@ function spawnWitherSkull(w, now) {
   }
   groundX = Math.max(30, Math.min(GAME_W - 30, groundX));
 
-  gameWitherSkulls.push({
-    x: startX,
-    y: startY,
-    vx,
-    vy,
-    size: 58,
-    groundX,
-    exploded: false,
-    explosionFrame: 0
-  });
-
-  w.nextShotAt = now + WITHER_SHOT_INTERVAL + Math.random() * 0.45;
+gameWitherSkulls.push({
+  x: startX,
+  y: startY,
+  vx,
+  vy,
+  size: 72,
+  groundX,
+  exploded: false,
+  explosionFrame: 0
+});
 }
 
 function applyWitherDotDamage() {
@@ -2166,14 +2295,18 @@ function updateAndDrawWithers(ctx, hb) {
       w.vy = -Math.abs(w.vy);
     }
 
-    if (now >= w.nextShotAt) {
-      spawnWitherSkull(w, now);
-    }
-
     drawWither(ctx, w);
   }
 
-  for (let i = gameWitherSkulls.length - 1; i >= 0; i--) {
+  if (now >= gameNextWitherShotAt) {
+  for (const w of gameWithers) {
+    spawnWitherSkull(w, now);
+  }
+
+  gameNextWitherShotAt = now + WITHER_SHOT_INTERVAL + Math.random() * 0.35;
+}
+
+for (let i = gameWitherSkulls.length - 1; i >= 0; i--) {
     const skull = gameWitherSkulls[i];
 
     if (skull.exploded) {
@@ -3302,6 +3435,7 @@ gameLightnings = [];
 gamePillagerArrows = [];
 gameWithers = [];
 gameWitherSkulls = [];
+gameNextWitherShotAt = 0;
 gameWitherDotTicks = 0;
 gameWitherDotTimer = 0;
 
@@ -3421,6 +3555,45 @@ gameTimeLeft = GAME_DURATION;
 
         <div id="introModal-clist"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+  <div class="modal-overlay" id="postModal" onclick="closePostModal(event)">
+  <div class="modal" style="width:680px;max-height:85vh;overflow-y:auto;">
+    <button class="close-btn" onclick="closePostModal()">x</button>
+    <div class="modal-head" style="flex-direction:column;align-items:flex-start;gap:12px;">
+      <div style="display:flex;align-items:center;gap:12px;width:100%;">
+        <div id="postModal-avatar" style="width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:rgba(255,255,255,0.4);overflow:hidden;"></div>
+        <div>
+          <div class="modal-name" id="postModal-nick" style="font-size:16px;"></div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.3);" id="postModal-date"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div id="postModal-text" style="font-size:14px;color:rgba(255,255,255,0.75);line-height:1.9;margin-bottom:24px;white-space:pre-wrap;word-break:break-word;"></div>
+      <div style="display:flex;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08);">
+        <button id="postModal-likeBtn" class="action-btn" onclick="togglePostModalLike()">❤️ 0</button>
+      </div>
+      <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin-bottom:20px;">
+      <div style="font-size:12px;color:rgba(57,255,20,0.7);font-weight:700;letter-spacing:1px;margin-bottom:12px;">💬 댓글</div>
+      <div id="postModal-commentInput">
+        <div id="postModal-loginNotice" style="display:none;">
+          <div class="comment-nick-toggle">
+            <button class="comment-nick-btn active" id="postModal-btnAnon" onclick="setPostCommentMode('anon')">🎭 익명</button>
+            <button class="comment-nick-btn" id="postModal-btnReal" onclick="setPostCommentMode('real')">🎮 내 아이디</button>
+          </div>
+          <div class="comment-input-row">
+            <input class="comment-input" id="postModal-cinput" placeholder="댓글을 입력하세요...">
+            <button class="comment-submit" onclick="submitPostModalComment()">등록</button>
+          </div>
+        </div>
+        <div id="postModal-needLogin" style="font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:12px;">
+          💬 댓글을 달려면 디스코드 로그인이 필요해요
+        </div>
+      </div>
+      <div id="postModal-clist"></div>
     </div>
   </div>
 </div>
