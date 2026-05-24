@@ -883,20 +883,24 @@ window.showPage = function(page, el) {
     const hash = window.location.hash;
     if (!hash.startsWith('#post-')) return;
     const postId = hash.replace('#post-', '');
+
+    const boardLink = Array.from(document.querySelectorAll('.nav-links a'))
+      .find(a => a.textContent.trim() === '게시판');
+
     const tryOpen = () => {
       const post = allPosts.find(p => p.id === postId);
       if (post) {
-        showPage('board', document.querySelector('.nav-links a:nth-child(4)'));
-        openPostModal(postId);
-        window.location.hash = '';
+        showPage('board', boardLink);
+        setTimeout(() => {
+          openPostModal(postId);
+          history.replaceState(null, '', window.location.pathname);
+        }, 100);
       } else {
-        setTimeout(tryOpen, 500);
+        setTimeout(tryOpen, 300);
       }
     };
     tryOpen();
   }
-
-  checkPostHash();
 
   window.discordLogin = function() {
     const url = 'https://discord.com/oauth2/authorize'
@@ -1209,6 +1213,8 @@ window.showPage = function(page, el) {
     document.getElementById('cinput-' + postId).value = '';
   }
 
+  let postHashChecked = false;
+
   onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), (snapshot) => {
     allPosts = [];
     let todayCount = 0; let totalLikes = 0;
@@ -1223,6 +1229,11 @@ window.showPage = function(page, el) {
     document.getElementById('sidebar-today').textContent = todayCount;
     document.getElementById('sidebar-likes').textContent = totalLikes;
     renderPosts();
+
+    if (!postHashChecked) {
+      postHashChecked = true;
+      checkPostHash();
+    }
   });
 
   window.submitPost = async function() {
