@@ -1124,7 +1124,7 @@ window.showPage = function(page, el) {
         + '<span class="post-nick">' + (p.nick || '익명').replace(/</g,'&lt;') + '</span>'
         + '<span class="post-date">' + formatDate(p.createdAt) + '</span>'
         + '</div>'
-        + (p.title ? '<div style="font-size:15px;font-weight:700;color:#eee;margin-bottom:6px;padding-left:48px;">' + p.title.replace(/</g,'&lt;') + '</div>' : '')
+        + (p.title ? '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;padding-left:48px;letter-spacing:0.3px;">' + p.title.replace(/</g,'&lt;') + '</div>' : '')
         + '<div class="board-post-text">' + (p.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>'
         + '<div class="board-post-actions">'
         + '<button class="action-btn' + (p.liked ? ' liked' : '') + '" onclick="toggleLike(\'' + p.id + '\', this)">❤️ ' + (p.likes || 0) + '</button>'
