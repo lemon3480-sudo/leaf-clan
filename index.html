@@ -1244,8 +1244,23 @@ window.showPage = function(page, el) {
     const isAnon = nickMode === 'anon';
     const nick = isAnon ? '익명' : (discordUser.global_name || discordUser.username);
     const avatar = isAnon ? null : discordUser.avatar;
+
+    let threadId = null;
+    try {
+      const res = await fetch('https://worker-production-cff5.up.railway.app/board-post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nick, text, isAnon })
+      });
+      const data = await res.json();
+      if (data.ok) threadId = data.threadId;
+    } catch (e) {
+      console.warn('디스코드 게시글 전송 실패:', e);
+    }
+
     await addDoc(collection(db, "posts"), {
       nick, text, likes: 0, avatar,
+      threadId,
       realNick: discordUser.global_name || discordUser.username,
       realAvatar: discordUser.avatar,
       discordId: discordUser.id,
@@ -1384,13 +1399,31 @@ window.showPage = function(page, el) {
     const isAnon = postCommentMode === 'anon';
     const nick = isAnon ? '익명' : (discordUser.global_name || discordUser.username);
     const avatar = isAnon ? null : discordUser.avatar;
+
+    const postRef = await getDoc(doc(db, 'posts', currentPostId));
+    const threadId = postRef.exists() ? postRef.data().threadId : null;
+
     await addDoc(collection(db, 'posts', currentPostId, 'comments'), {
       nick, text, avatar,
       realNick: discordUser.global_name || discordUser.username,
       discordId: discordUser.id,
       isAnon,
+      fromDiscord: false,
       createdAt: serverTimestamp()
     });
+
+    if (threadId) {
+      try {
+        await fetch('https://worker-production-cff5.up.railway.app/board-comment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ threadId, nick, text, isAnon })
+        });
+      } catch (e) {
+        console.warn('디스코드 댓글 전송 실패:', e);
+      }
+    }
+
     document.getElementById('postModal-cinput').value = '';
   }
 
