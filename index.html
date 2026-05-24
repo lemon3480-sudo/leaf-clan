@@ -1172,16 +1172,16 @@ window.showPage = function(page, el) {
           ? '<div class="comment-avatar"><img src="' + c.avatar + '" alt=""></div>'
           : '<div class="comment-avatar">?</div>';
         const commentImagesHtml = (c.images && c.images.length > 0)
-            ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">' + c.images.map(img => '<img src="' + img + '" style="max-width:160px;max-height:160px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid rgba(255,255,255,0.1);" onclick="window.open(\'' + img + '\',\'_blank\')">').join('') + '</div>'
-            : '';
-          clist.innerHTML += '<div class="comment-item">'
-            + avatarHtml
-            + '<div class="comment-body">'
-            + '<span class="comment-nick-text">' + (c.nick||'익명').replace(/</g,'&lt;') + '</span>'
-            + '<span class="comment-text">' + (c.text||'').replace(/</g,'&lt;') + '</span>'
-            + commentImagesHtml
-            + '<div class="comment-date">' + formatDate(c.createdAt) + '</div>'
-            + '</div></div>';
+          ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">' + c.images.map(img => '<img src="' + img + '" style="max-width:160px;max-height:160px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid rgba(255,255,255,0.1);" onclick="window.open(\'' + img + '\',\'_blank\')">').join('') + '</div>'
+          : '';
+        clist.innerHTML += '<div class="comment-item">'
+          + avatarHtml
+          + '<div class="comment-body">'
+          + '<span class="comment-nick-text">' + (c.nick||'익명').replace(/</g,'&lt;') + '</span>'
+          + '<span class="comment-text">' + (c.text||'').replace(/</g,'&lt;') + '</span>'
+          + commentImagesHtml
+          + '<div class="comment-date">' + formatDate(c.createdAt) + '</div>'
+          + '</div></div>';
       });
     });
   }
