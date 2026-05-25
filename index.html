@@ -463,7 +463,8 @@
       <a onclick="showPage('board', this)">게시판</a>
       <a onclick="showPage('game', this)">게임</a>
     </div>
-    <div class="nav-right">
+    <div class="nav-right" style="display:flex;align-items:center;gap:14px;">
+      <button id="bgm-btn" onclick="toggleBGM()" style="background:none;border:none;font-size:22px;cursor:pointer;transition:transform 0.15s;padding:0;line-height:1;" title="배경음악" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🔇</button>
       <button id="login-btn" onclick="discordLogin()">🎮 디스코드 로그인</button>
       <div id="user-info">
         <img id="user-avatar" src="" alt="">
@@ -926,6 +927,24 @@ window.showPage = function(page, el) {
   }
 
   loadDiscordUser();
+
+  const siteBGM = new Audio('https://teamleaf.xyz/sounds/worldismine.mp3');
+  siteBGM.loop = true;
+  siteBGM.volume = 0.4;
+  let siteBGMPlaying = false;
+
+  window.toggleBGM = function() {
+    const btn = document.getElementById('bgm-btn');
+    if (siteBGMPlaying) {
+      siteBGM.pause();
+      siteBGMPlaying = false;
+      btn.textContent = '🔇';
+    } else {
+      siteBGM.play().catch(() => {});
+      siteBGMPlaying = true;
+      btn.textContent = '🔊';
+    }
+  }
 
   const roleConfig = {
     Head:   { color: 'r-head',   label: '👑 Head' },
