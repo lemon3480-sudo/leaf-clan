@@ -1627,7 +1627,7 @@ const HYPER_PILLAGER_ARROW_SPEED_MULT = 1.35;
 const HYPER_PILLAGER_ARROW_GRAVITY_MULT = 0.78;
 
 // 위더
-const WITHER_SHOT_INTERVAL = 1.25;
+const WITHER_SHOT_INTERVAL = 2.2;
 const WITHER_SKULL_SPEED = 13.8;
 const WITHER_DOT_TICKS = 3;
 const WITHER_DOT_INTERVAL = 21; // 약 0.35초
@@ -3304,7 +3304,7 @@ for (let i = gameParticles.length-1; i >= 0; i--) {
       playSFX('gameover');
       if (gameTimerInterval) clearInterval(gameTimerInterval);
       document.getElementById('gameTimerHUD').style.display = 'none';
-      if (discordUserGame) gameSaveRank(discordUserGame, gameScore);
+      // 게임오버 시 미기재
       const overlay = document.getElementById('gameOverlay');
       overlay.style.display = 'flex';
 overlay.style.alignItems = 'center';
@@ -3512,7 +3512,7 @@ window.confirmLeaveGame = function() {
 }
 
 function showResultScreen() {
-    if (discordUserGame) gameSaveRank(discordUserGame, gameScore);
+    if (discordUserGame) await gameSaveRank(discordUserGame, gameScore);
     stopBGM();
     playSFX('finish');
 
@@ -3679,6 +3679,11 @@ gameTimeLeft = GAME_DURATION;
     const timerEl = document.getElementById('gameTimerText');
     if (timerEl) { timerEl.textContent = '3:00'; timerEl.style.color = '#fff'; }
 
+    if (siteBGMPlaying) {
+      siteBGM.pause();
+      siteBGMPlaying = false;
+      document.getElementById('bgm-btn').textContent = '🔇';
+    }
     playBGM();
     await runGameIntro();
   };
