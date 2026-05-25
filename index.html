@@ -3283,7 +3283,7 @@ for (let i = gameParticles.length-1; i >= 0; i--) {
       playSFX('gameover');
       if (gameTimerInterval) clearInterval(gameTimerInterval);
       document.getElementById('gameTimerHUD').style.display = 'none';
-      if (discordUserGame) await gameSaveRank(discordUserGame, gameScore);
+      if (discordUserGame) gameSaveRank(discordUserGame, gameScore);
       const overlay = document.getElementById('gameOverlay');
       overlay.style.display = 'flex';
 overlay.style.alignItems = 'center';
