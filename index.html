@@ -791,7 +791,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, orderBy, doc, updateDoc, increment, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, onSnapshot, addDoc, serverTimestamp, query, orderBy, doc, updateDoc, increment, getDoc, setDoc, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCmoMAQQ21iq424Y9205wiBb2LIijpN2lY",
@@ -1561,7 +1561,7 @@ window.showPage = function(page, el) {
   let gamePlayer = null;
   let gameKeys = {};
   let gameSkinImg = null;
-  let gameRankings = JSON.parse(localStorage.getItem('leafGameRank') || '[]');
+  let gameRankings = [];
   let gameAnimFrame = null;
   let gameCombo = 0;
   let gameComboTimer = 0;
@@ -2564,34 +2564,92 @@ function updateComboUI() {
     else breakCombo();
   }
 
-  function gameUpdateRank() {
-    const top3 = gameRankings.slice(0,3);
-    const top10 = gameRankings.slice(0,10);
-    const medals = ['🥇','🥈','🥉'];
-    ['rankListOverlay','rankListEnd'].forEach(id => {
+  let gameRankingsFirebase = [];
+
+  function renderRankUI(rankings) {
+    const top3 = rankings.slice(0, 3);
+    const top10 = rankings.slice(0, 10);
+    const medals = ['🥇', '🥈', '🥉'];
+    ['rankListOverlay', 'rankListEnd'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
       el.innerHTML = top3.length === 0
         ? '<div style="font-size:9px;color:#888;font-family:monospace;">아직 기록 없음</div>'
-        : top3.map((r,i) => `<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:8px 12px;margin-bottom:6px;background:rgba(57,255,20,0.05);border:1px solid rgba(57,255,20,0.15);border-radius:8px;font-size:12px;color:#eee;font-family:'Noto Sans KR',sans-serif;"><span>${medals[i]} ${r.name}</span><span style="color:#39ff14;font-weight:700;">${r.score.toLocaleString()}</span></div>`).join('');
+        : top3.map((r, i) => `<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:8px 12px;margin-bottom:6px;background:rgba(57,255,20,0.05);border:1px solid rgba(57,255,20,0.15);border-radius:8px;font-size:12px;color:#eee;font-family:'Noto Sans KR',sans-serif;"><span>${medals[i]} ${r.name}</span><span style="color:#39ff14;font-weight:700;">${r.score.toLocaleString()}</span></div>`).join('');
     });
     const hudRank = document.getElementById('hudRankList');
     if (hudRank) {
       hudRank.innerHTML = top10.length === 0
         ? '<div style="font-size:12px;color:#888;font-family:monospace;">기록 없음</div>'
-        : top10.map((r,i) => `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;color:${i===0?'#f5c518':i===1?'#ccc':i===2?'#cd7f32':'rgba(255,255,255,0.6)'};font-family:'Noto Sans KR',sans-serif;">${i+1}. ${r.name}<span style="color:#39ff14;font-weight:700;">${r.score.toLocaleString()}</span></div>`).join('');
+        : top10.map((r, i) => `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-size:12px;color:${i===0?'#f5c518':i===1?'#ccc':i===2?'#cd7f32':'rgba(255,255,255,0.6)'};font-family:'Noto Sans KR',sans-serif;">${i+1}. ${r.name}<span style="color:#39ff14;font-weight:700;">${r.score.toLocaleString()}</span></div>`).join('');
     }
   }
-  gameUpdateRank();
 
-  function gameSaveRank(name, s) {
-    gameRankings.push({ name, score: s });
-    gameRankings.sort((a,b) => b.score - a.score);
-    gameRankings = gameRankings.slice(0,10);
-    localStorage.setItem('leafGameRank', JSON.stringify(gameRankings));
-    gameUpdateRank();
+  function gameUpdateRank() {
+    renderRankUI(gameRankingsFirebase);
   }
 
+  async function loadFirebaseRank() {
+    try {
+      const snap = await getDocs(query(collection(db, 'gameRank'), orderBy('score', 'desc'), limit(10)));
+      gameRankingsFirebase = [];
+      snap.forEach(d => gameRankingsFirebase.push(d.data()));
+      renderRankUI(gameRankingsFirebase);
+    } catch (e) {
+      console.warn('리더보드 로딩 실패:', e);
+    }
+  }
+
+  loadFirebaseRank();
+
+  onSnapshot(query(collection(db, 'gameRank'), orderBy('score', 'desc'), limit(10)), snap => {
+    gameRankingsFirebase = [];
+    snap.forEach(d => gameRankingsFirebase.push(d.data()));
+    renderRankUI(gameRankingsFirebase);
+  });
+  function parseDisplayNameForRank(displayName) {
+    const hasPipe = displayName.includes('|') || displayName.includes('ㅣ');
+    const sep = displayName.includes('|') ? '|' : 'ㅣ';
+    if (hasPipe) {
+      const parts = displayName.split(sep);
+      return parts[parts.length - 1].trim();
+    }
+    return displayName.trim();
+  }
+
+  async function gameSaveRank(discordUser, score) {
+    if (!discordUser) return;
+
+    const discordId = discordUser.id;
+
+    const member = allMembers.find(m => m.discord === discordUser.tag);
+    let displayName = discordUser.global_name || discordUser.username;
+    if (member && member.mcNick) {
+      displayName = member.mcNick;
+    } else {
+      displayName = parseDisplayNameForRank(displayName);
+    }
+
+    try {
+      const docRef = doc(db, 'gameRank', discordId);
+      const existing = await getDoc(docRef);
+
+      if (existing.exists()) {
+        const prevScore = existing.data().score || 0;
+        if (score > prevScore) {
+          await setDoc(docRef, { name: displayName, score, discordId, updatedAt: serverTimestamp() });
+          console.log('신기록 업데이트:', displayName, score);
+        } else {
+          console.log('기존 기록이 더 높아서 미기재:', prevScore, '>', score);
+        }
+      } else {
+        await setDoc(docRef, { name: displayName, score, discordId, updatedAt: serverTimestamp() });
+        console.log('리더보드 등록:', displayName, score);
+      }
+    } catch (e) {
+      console.warn('리더보드 저장 실패:', e);
+    }
+  }
   const ITEM_IMGS = {};
   const ITEM_IMG_SRCS = {
     diamond: 'https://teamleaf.xyz/images/diamond.png',
@@ -3225,8 +3283,7 @@ for (let i = gameParticles.length-1; i >= 0; i--) {
       playSFX('gameover');
       if (gameTimerInterval) clearInterval(gameTimerInterval);
       document.getElementById('gameTimerHUD').style.display = 'none';
-      const name = discordUserGame ? (discordUserGame.global_name || discordUserGame.username) : '익명';
-      gameSaveRank(name, gameScore);
+      if (discordUserGame) await gameSaveRank(discordUserGame, gameScore);
       const overlay = document.getElementById('gameOverlay');
       overlay.style.display = 'flex';
 overlay.style.alignItems = 'center';
@@ -3434,8 +3491,7 @@ window.confirmLeaveGame = function() {
 }
 
 function showResultScreen() {
-    const name = discordUserGame ? (discordUserGame.global_name || discordUserGame.username) : '익명';
-    gameSaveRank(name, gameScore);
+    if (discordUserGame) gameSaveRank(discordUserGame, gameScore);
     stopBGM();
     playSFX('finish');
 
