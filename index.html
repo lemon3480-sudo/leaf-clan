@@ -1629,7 +1629,7 @@ const HYPER_PILLAGER_ARROW_GRAVITY_MULT = 0.78;
 // 위더
 const WITHER_SHOT_INTERVAL = 2.2;
 const WITHER_SKULL_SPEED = 13.8;
-const WITHER_DOT_TICKS = 3;
+const WITHER_DOT_TICKS = 1;
 const WITHER_DOT_INTERVAL = 21; // 약 0.35초
 
 let gameActiveChorus = null;
@@ -2478,10 +2478,11 @@ for (let i = gameWitherSkulls.length - 1; i >= 0; i--) {
     };
 
     if (!gameOver && !gameIntroPhase && rectsOverlap(skullBox, hb)) {
-      explodeWitherSkull(skull);
-      applyWitherDotDamage();
+     explodeWitherSkull(skull);
+      gameHearts = Math.max(0, gameHearts - 1);
+      gameUpdateHearts();
       if (!isDebuffFeverProtected()) breakCombo();
-      showFloatText(skull.x, skull.y, 'WITHER!', '#a855f7');
+      showFloatText(skull.x, skull.y, '-1❤️ WITHER!', '#a855f7');
       continue;
     }
 
