@@ -450,7 +450,14 @@
 
 <div class="content">
   <nav>
-    <div class="logo"><img src="https://teamleaf.xyz/images/logoglow.png" alt="LEAF" style="height:36px;width:auto;object-fit:contain;image-rendering:pixelated;"></div>
+    <div style="position:absolute;left:24px;display:flex;align-items:center;gap:10px;">
+      <div class="logo" onclick="showPage('members', document.querySelector('.nav-links a'))" style="cursor:pointer;">
+        <img src="https://teamleaf.xyz/images/logoglow.png" alt="LEAF" style="height:36px;width:auto;object-fit:contain;image-rendering:pixelated;">
+      </div>
+      <a href="https://discord.gg/teamleaf" target="_blank" style="display:flex;align-items:center;opacity:0.7;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">
+        <img src="https://teamleaf.xyz/images/discord.png" alt="Discord" style="height:22px;width:auto;object-fit:contain;">
+      </a>
+    </div>
     <div class="nav-links">
       <a class="active" onclick="showPage('members', this)">클랜원</a>
       <a onclick="showPage('intro', this)">소개</a>
