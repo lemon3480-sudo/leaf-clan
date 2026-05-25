@@ -3511,7 +3511,7 @@ window.confirmLeaveGame = function() {
   gameLeaveTargetEl = null;
 }
 
-function showResultScreen() {
+async function showResultScreen() {
     if (discordUserGame) await gameSaveRank(discordUserGame, gameScore);
     stopBGM();
     playSFX('finish');
